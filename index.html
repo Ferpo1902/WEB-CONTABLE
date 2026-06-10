@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContaFlow — El software que devuelve el tiempo a los contadores de México</title>
+  <meta name="description" content="Automatiza la descarga de XML del SAT, el cálculo de impuestos 2026, la DIOT, los recordatorios a clientes y la cobranza de tus igualas. 100% nube, RFCs ilimitados, precio plano por contador." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/landing.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📊</text></svg>" />
+</head>
+<body class="landing">
+
+  <!-- ============================== NAV ================================= -->
+  <header class="site-nav" id="siteNav">
+    <div class="container nav-inner">
+      <a class="brand" href="#">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">ContaFlow</span>
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="#dolores">El problema</a>
+        <a href="#producto">Producto</a>
+        <a href="#comparativa">Comparativa</a>
+        <a href="#roi">Tu ahorro</a>
+        <a href="#precios">Precios</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-cta">
+        <a class="btn btn-ghost btn-sm" href="app.html">Ver la demo</a>
+        <a class="btn btn-primary btn-sm" href="#precios">Empezar gratis</a>
+      </div>
+      <button class="nav-burger" id="navBurger" aria-label="Menú">☰</button>
+    </div>
+  </header>
+
+  <!-- ============================== HERO ================================ -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="badge badge-blue eyebrow">Hecho en México, para la fiscalidad mexicana 🇲🇽</span>
+        <h1>Tu despacho contable, <span class="hl">sin las horas perdidas</span>.</h1>
+        <p class="hero-sub">
+          ContaFlow automatiza lo que hoy te roba el día: descargar XML de un SAT saturado,
+          recalcular impuestos con tablas que cambian, perseguir clientes por documentos
+          y cobrar igualas atrasadas. Tú dedícate a lo que sí paga:
+          <strong>asesorar y conseguir más clientes</strong>.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="app.html">▶ Probar la demo (sin registro)</a>
+          <a class="btn btn-ghost" href="#dolores">Ver qué resolvemos</a>
+        </div>
+        <ul class="hero-checks">
+          <li>✓ RFCs <strong>ilimitados</strong> en todos los planes</li>
+          <li>✓ 100% nube: Mac, Windows y celular</li>
+          <li>✓ Tarifas ISR 2026 ya cargadas (Anexo 8 RMF)</li>
+          <li>✓ Tus datos se exportan en 1 clic, sin candados</li>
+        </ul>
+      </div>
+
+      <div class="hero-visual">
+        <div class="mock-card mock-main card">
+          <div class="mock-head">
+            <span class="dot dot-ok"></span> Descarga nocturna completada — 03:14 h
+          </div>
+          <div class="mock-big">1,348 <small>XML</small></div>
+          <div class="mock-sub">de 8 contribuyentes · 3 reintentos automáticos por saturación del SAT · 0 intervención humana</div>
+          <div class="mock-bar"><span style="width:100%"></span></div>
+        </div>
+        <div class="mock-card mock-alert card">
+          🚨 <strong>69-B detectado:</strong> proveedor de Taller Carrillo en listado de presuntos. 3 CFDI por $84,300.
+        </div>
+        <div class="mock-card mock-money card">
+          💸 Recordatorio de iguala enviado a Luis R. <small>— aviso 3 de 3, suspensión automática programada</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== CINTA DE CONTEXTO ========================= -->
+  <section class="strip">
+    <div class="container strip-inner">
+      <p>
+        Diseñado a partir de las quejas más repetidas por contadores mexicanos en foros,
+        comunidades y prensa especializada: portal del SAT saturado, software de escritorio de los 90,
+        licencias que cobran por cada RFC y clientes que no pagan.
+        <a href="app.html">Compruébalo en la demo →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================ DOLORES =============================== -->
+  <section class="section" id="dolores">
+    <div class="container">
+      <div class="section-head">
+        <span class="badge badge-bad eyebrow">El diagnóstico</span>
+        <h2>Los 7 ladrones de tiempo del contador mexicano</h2>
+        <p>No lo inventamos nosotros: es lo que la propia comunidad contable lleva años denunciando.</p>
+      </div>
+
+      <div class="pain-grid">
+        <article class="card card-pad pain">
+          <div class="pain-ico">⬇️</div>
+          <h3>Descargar XML del SAT</h3>
+          <p>Portal saturado, errores «intente más tarde», Web Service que tarda <strong>horas o días</strong>, XML «inexistentes» que sí existen. La solución oficial de la comunidad: <em>reintentar y esperar</em>.</p>
+          <span class="fix">ContaFlow: robot nocturno con reintentos automáticos. Amaneces con todo descargado. <a href="app.html">Ver demo →</a></span>
+        </article>
+        <article class="card card-pad pain">
+          <div class="pain-ico">⏱️</div>
+          <h3>Captura y contabilización manual</h3>
+          <p>En promedio <strong>~9 horas por cliente al mes</strong> capturando información y cruzándola contra bancos y CFDI. Multiplícalo por tu cartera.</p>
+          <span class="fix">ContaFlow: pólizas y cruces automáticos desde el XML.</span>
+        </article>
+        <article class="card card-pad pain">
+          <div class="pain-ico">📁</div>
+          <h3>Perseguir clientes por documentos</h3>
+          <p>El cierre del mes detenido porque el cliente no manda su estado de cuenta. WhatsApp tras WhatsApp, cada mes, con cada cliente.</p>
+          <span class="fix">ContaFlow: portal del cliente con recordatorios automáticos y semáforo de entrega.</span>
+        </article>
+        <article class="card card-pad pain">
+          <div class="pain-ico">💸</div>
+          <h3>Igualas que no te pagan</h3>
+          <p>Retener la contabilidad para presionar el pago es <strong>ilegal</strong> (te sanciona la profesión) y demandar es lento. Muchos despachos trabajan meses gratis.</p>
+          <span class="fix">ContaFlow: cobranza automática con suspensión del portal — presión efectiva y 100% legal.</span>
+        </article>
+        <article class="card card-pad pain">
+          <div class="pain-ico">🧮</div>
+          <h3>Tablas que cambian, Excel que envejece</h3>
+          <p>El Anexo 8 RMF 2026 actualizó <strong>todas</strong> las tarifas de ISR (+13.21% por inflación). Un Excel viejo = impuestos mal calculados = multas para tu cliente.</p>
+          <span class="fix">ContaFlow: motor fiscal siempre vigente con papel de trabajo descargable.</span>
+        </article>
+        <article class="card card-pad pain">
+          <div class="pain-ico">🗂️</div>
+          <h3>La DIOT y sus plataformas fallidas</h3>
+          <p>La nueva plataforma del SAT nació con tantas fallas que el IMCP protestó formalmente y el SAT tuvo que revivir el viejo DEM «temporalmente».</p>
+          <span class="fix">ContaFlow: genera el .txt de carga masiva listo para subir.</span>
+        </article>
+        <article class="card card-pad pain">
+          <div class="pain-ico">📬</div>
+          <h3>Vigilar buzón, 69-B y 32-D de toda la cartera</h3>
+          <p>Multas de <strong>$3,850 a $11,540</strong> por buzón sin habilitar (aplican desde el 1-ene-2027). Un proveedor EFOS puede tumbar las deducciones de tu cliente.</p>
+          <span class="fix">ContaFlow: semáforo multi-cliente con alertas diarias automáticas.</span>
+        </article>
+        <article class="card card-pad pain pain-cta">
+          <h3>¿Te suena familiar?</h3>
+          <p>Todo esto ya está resuelto en la demo. Sin registro, sin tarjeta, sin llamada de ventas.</p>
+          <a class="btn btn-light" href="app.html">Abrir la demo →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PRODUCTO ============================== -->
+  <section class="section section-alt" id="producto">
+    <div class="container">
+      <div class="section-head">
+        <span class="badge badge-ok eyebrow">La solución</span>
+        <h2>Un solo lugar para operar todo tu despacho</h2>
+        <p>Cada módulo ataca un ladrón de tiempo específico. Nada de funciones de relleno.</p>
+      </div>
+
+      <div class="feature-rows">
+        <div class="feature-row">
+          <div class="feature-txt">
+            <h3>🤖 Robot de descarga masiva de XML</h3>
+            <p>Cada noche a las 03:00, ContaFlow se autentica con la e.firma de cada cliente, solicita los paquetes al SAT y <strong>reintenta automáticamente</strong> cuando el servicio se satura — con registro de cada intento. Validación de duplicados, cancelaciones y cruce contra el listado 69-B incluidos.</p>
+            <a href="app.html" class="feature-link">Ver el robot en acción →</a>
+          </div>
+          <div class="feature-shot shot-robot">
+            <div class="shot-line ok">[03:14] Autenticando con e.firma de 8 contribuyentes…</div>
+            <div class="shot-line warn">[03:16] ⚠ SAT respondió 500 — reintento en 40 s</div>
+            <div class="shot-line ok">[03:18] Paquete recibido: 422 XML ✓</div>
+            <div class="shot-line ok">[03:25] ✔ 1,348 XML · 3 riesgos detectados</div>
+          </div>
+        </div>
+
+        <div class="feature-row rev">
+          <div class="feature-txt">
+            <h3>🚦 Semáforo fiscal multi-cliente</h3>
+            <p>Toda tu cartera en una pantalla: contabilidad, declaraciones, DIOT, buzón tributario, opinión 32-D y documentos pendientes. Lo rojo arriba, con la acción a un clic. Deja de revisar el portal del SAT cliente por cliente.</p>
+            <a href="app.html" class="feature-link">Ver el semáforo →</a>
+          </div>
+          <div class="feature-shot">
+            <div class="sem-demo"><span>Distribuidora La Paz</span><span class="badge badge-ok">🟢 Al corriente</span></div>
+            <div class="sem-demo"><span>Taller Carrillo</span><span class="badge badge-bad">🔴 Proveedor 69-B</span></div>
+            <div class="sem-demo"><span>Grupo Ferretero Bajío</span><span class="badge badge-bad">🔴 Buzón sin habilitar</span></div>
+            <div class="sem-demo"><span>María Elena Pérez</span><span class="badge badge-warn">🟡 Faltan docs</span></div>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-txt">
+            <h3>🧮 Impuestos 2026 sin abrir Excel</h3>
+            <p>RESICO, actividad empresarial, personas morales, sueldos e IVA con las tarifas del <strong>Anexo 8 RMF 2026</strong> ya cargadas. Desglose renglón por renglón y papel de trabajo listo para imprimir o adjuntar al expediente.</p>
+            <a href="app.html" class="feature-link">Probar la calculadora →</a>
+          </div>
+          <div class="feature-shot">
+            <div class="calc-demo">
+              <div class="cd-row"><span>Utilidad fiscal</span><strong>$185,000.00</strong></div>
+              <div class="cd-row"><span>(−) Límite inferior</span><strong>$141,880.67</strong></div>
+              <div class="cd-row"><span>(×) 34% s/ excedente</span><strong>$14,660.57</strong></div>
+              <div class="cd-row"><span>(+) Cuota fija</span><strong>$37,009.69</strong></div>
+              <div class="cd-row total"><span>ISR causado</span><strong>$51,670.26</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row rev">
+          <div class="feature-txt">
+            <h3>🤝 Portal del cliente + cobranza automática</h3>
+            <p>Tus clientes suben documentos desde el celular, ven su semáforo y sus impuestos. Si no entregan, el portal los persigue por ti. Si no te pagan la iguala, la secuencia de cobranza escala sola hasta <strong>suspender su portal</strong> — tú nunca tienes la conversación incómoda.</p>
+            <a href="app.html" class="feature-link">Ver el portal →</a>
+          </div>
+          <div class="feature-shot">
+            <div class="wa-demo">
+              Hola Luis 👋 Tienes 2 igualas pendientes por <strong>$3,600</strong>.
+              Paga aquí: pago.contaflow.mx/rios/f-2204<br />
+              ⚠️ Sin pago antes del 15-jun, tu portal se suspende.
+              <div class="wa-demo-meta">Aviso 3 de 3 · automático · 08:15 ✓✓</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-txt">
+            <h3>📅 Calendario fiscal que se calcula solo</h3>
+            <p>Día 17 recorrido a día hábil, facilidad del 6º dígito del RFC por cliente, DIOT a fin de mes, anuales, PTU y la multa del buzón 2027. Recordatorios por WhatsApp y correo para ti y para cada cliente.</p>
+            <a href="app.html" class="feature-link">Ver calendario 2026 →</a>
+          </div>
+          <div class="feature-shot">
+            <div class="cal-demo"><span class="cal-d">17<br /><small>JUN</small></span><div><strong>Pagos provisionales mayo</strong><br /><small>ISR e IVA · PF y PM · en 7 días</small></div></div>
+            <div class="cal-demo"><span class="cal-d">30<br /><small>JUN</small></span><div><strong>DIOT de mayo</strong><br /><small>facilidad administrativa fin de mes</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== COMPARATIVA ============================ -->
+  <section class="section" id="comparativa">
+    <div class="container">
+      <div class="section-head">
+        <span class="badge badge-violet eyebrow">Sin rodeos</span>
+        <h2>Por qué cambiarte (o por qué quedarte donde estás)</h2>
+        <p>Comparación honesta contra lo que usa hoy la mayoría de los despachos.</p>
+      </div>
+
+      <div class="card table-wrap comp-wrap">
+        <table class="tbl comp">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="comp-us">ContaFlow</th>
+              <th>Escritorio tradicional<br /><small>(CONTPAQi / Aspel)</small></th>
+              <th>Nube por empresa<br /><small>(Contalink y similares)</small></th>
+              <th>Excel + portal SAT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Modelo de precio</td><td class="comp-us"><strong>Plano por contador, RFCs ilimitados</strong></td><td>Licencia anual + costo por RFC/usuario extra</td><td>~$400–500/mes <strong>por cada empresa</strong></td><td>«Gratis» (lo pagas en horas)</td></tr>
+            <tr><td>Costo con 40 clientes</td><td class="comp-us"><strong>$1,290/mes</strong></td><td>$8,500+ anual base + extras y servidor</td><td>~$16,000–20,000/mes</td><td>$0 + tus noches y fines de semana</td></tr>
+            <tr><td>Funciona en Mac/celular</td><td class="comp-us">✅ 100% nube</td><td>❌ Windows/escritorio, requiere servidor</td><td>✅</td><td>—</td></tr>
+            <tr><td>Descarga XML automática con reintentos</td><td class="comp-us">✅ Nocturna, sin intervención</td><td>Parcial (manual o con add-ons)</td><td>Parcial</td><td>❌ Tú contra el portal saturado</td></tr>
+            <tr><td>Portal del cliente + recordatorios</td><td class="comp-us">✅ Incluido</td><td>❌</td><td>Limitado</td><td>❌ (tu WhatsApp personal)</td></tr>
+            <tr><td>Cobranza de igualas con suspensión automática</td><td class="comp-us">✅ Incluido</td><td>❌</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Vigilancia buzón / 69-B / 32-D multi-cliente</td><td class="comp-us">✅ Alertas diarias</td><td>❌</td><td>Parcial</td><td>❌ Manual, cliente por cliente</td></tr>
+            <tr><td>Tarifas 2026 actualizadas</td><td class="comp-us">✅ Automático</td><td>Con la renovación anual (de pago)</td><td>✅</td><td>❌ Tú actualizas cada plantilla</td></tr>
+            <tr><td>Soporte</td><td class="comp-us">Contadores reales, chat &lt; 5 min</td><td>Red de distribuidores</td><td>Chat / tickets</td><td>Foros y grupos de Facebook</td></tr>
+            <tr><td>Tus datos si te vas</td><td class="comp-us">Exportación total en 1 clic</td><td>Bases locales propietarias</td><td>Exportable</td><td>Son tuyos (en 200 archivos sueltos)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hint center" style="margin-top:12px">Precios de referencia públicos de 2026; verifica con cada proveedor. Si un competidor mejora, esta tabla se actualiza: preferimos ganarte por producto.</p>
+    </div>
+  </section>
+
+  <!-- ============================== ROI ================================= -->
+  <section class="section section-dark" id="roi">
+    <div class="container">
+      <div class="section-head">
+        <span class="badge badge-blue eyebrow">Haz números</span>
+        <h2 style="color:#fff">¿Cuánto vale tu tiempo recuperado?</h2>
+        <p style="color:#aab8dd">Mueve los controles. El cálculo usa el promedio de ~9 h/cliente/mes documentado en la industria y una automatización del 70% (estimación conservadora).</p>
+      </div>
+
+      <div class="roi-grid">
+        <div class="card card-pad roi-form">
+          <label class="field"><span class="lbl">¿Cuántos clientes (RFC) atiendes?</span>
+            <input type="range" id="roiClientes" min="5" max="120" value="40" step="5" />
+            <div class="roi-val"><strong id="roiClientesVal">40</strong> clientes</div>
+          </label>
+          <label class="field"><span class="lbl">Horas que dedicas a cada cliente al mes</span>
+            <input type="range" id="roiHoras" min="2" max="16" value="9" step="1" />
+            <div class="roi-val"><strong id="roiHorasVal">9</strong> horas</div>
+          </label>
+          <label class="field"><span class="lbl">Valor de tu hora (MXN)</span>
+            <input type="range" id="roiTarifa" min="150" max="1500" value="400" step="50" />
+            <div class="roi-val"><strong id="roiTarifaVal">$400</strong> /hora</div>
+          </label>
+        </div>
+        <div class="roi-out">
+          <div class="roi-stat card"><div class="roi-k" id="roiHorasMes">—</div><div class="roi-l">horas liberadas al mes</div></div>
+          <div class="roi-stat card"><div class="roi-k" id="roiDinero">—</div><div class="roi-l">valor mensual de ese tiempo</div></div>
+          <div class="roi-stat card"><div class="roi-k" id="roiVsNube">—</div><div class="roi-l">ahorro vs. nube que cobra ~$495 por empresa</div></div>
+          <p class="roi-note" id="roiNota"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PRECIOS =============================== -->
+  <section class="section" id="precios">
+    <div class="container">
+      <div class="section-head">
+        <span class="badge badge-ok eyebrow">Precios simples</span>
+        <h2>RFCs ilimitados. En todos los planes. En serio.</h2>
+        <p>Crecer tu cartera no debería encarecer tu software. Cobramos por contador, no por cliente.</p>
+      </div>
+
+      <div class="price-grid">
+        <div class="card price">
+          <h3>Contador Solo</h3>
+          <div class="price-amt">$590 <small>MXN/mes</small></div>
+          <p class="muted">Para el contador independiente.</p>
+          <ul>
+            <li>✓ 1 usuario · <strong>RFCs ilimitados</strong></li>
+            <li>✓ Robot de descarga de XML nocturno</li>
+            <li>✓ Semáforo fiscal y calendario con recordatorios</li>
+            <li>✓ Calculadora 2026 + papeles de trabajo</li>
+            <li>✓ DIOT (.txt de carga masiva)</li>
+            <li>✓ Soporte por chat &lt; 5 min</li>
+          </ul>
+          <a class="btn btn-ghost w100" href="app.html">Empezar con la demo</a>
+        </div>
+
+        <div class="card price price-hero">
+          <span class="badge badge-blue">El favorito de los despachos</span>
+          <h3>Despacho</h3>
+          <div class="price-amt">$1,290 <small>MXN/mes</small></div>
+          <p class="muted">Para equipos de hasta 5 personas.</p>
+          <ul>
+            <li>✓ Todo lo de Contador Solo</li>
+            <li>✓ 5 usuarios con roles y bitácora</li>
+            <li>✓ <strong>Portal del cliente</strong> con recordatorios automáticos</li>
+            <li>✓ <strong>Cobranza automática</strong> de igualas + suspensión de portal</li>
+            <li>✓ Conciliación bancaria asistida</li>
+            <li>✓ Vigilancia 69-B / buzón / 32-D con alertas diarias</li>
+          </ul>
+          <a class="btn btn-primary w100" href="app.html">Probar la demo →</a>
+        </div>
+
+        <div class="card price">
+          <h3>Firma</h3>
+          <div class="price-amt">$2,490 <small>MXN/mes</small></div>
+          <p class="muted">Para firmas en crecimiento.</p>
+          <ul>
+            <li>✓ Todo lo de Despacho</li>
+            <li>✓ 15 usuarios + permisos avanzados</li>
+            <li>✓ Portal con <strong>tu logo y tu dominio</strong> (marca blanca)</li>
+            <li>✓ API y exportaciones programadas</li>
+            <li>✓ Onboarding asistido: migramos tus clientes</li>
+            <li>✓ Gerente de cuenta</li>
+          </ul>
+          <a class="btn btn-ghost w100" href="app.html">Empezar con la demo</a>
+        </div>
+      </div>
+
+      <div class="price-guarantee card card-pad">
+        <div>
+          <h3 class="mb0">Garantía anti-QuickBooks 🛡️</h3>
+          <p class="mb0 muted">A miles de despachos los dejó colgados un software que «se fue de México». Con ContaFlow: exportación total de tus datos en 1 clic, sin plazos forzosos, cancelas cuando quieras. Y si el SAT cambia las reglas, la actualización es nuestra chamba, no un cargo extra.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== FAQ ================================= -->
+  <section class="section section-alt" id="faq">
+    <div class="container container-narrow">
+      <div class="section-head">
+        <h2>Preguntas frecuentes</h2>
+      </div>
+      <div class="faq-list" id="faqList">
+        <details class="card faq">
+          <summary>¿De verdad los RFCs son ilimitados? ¿Dónde está la trampa?</summary>
+          <p>No hay trampa: nuestro costo marginal por RFC es bajo y preferimos que crezcas. Cobramos por usuario del despacho (quién trabaja en la plataforma), no por cliente tuyo. Si pasas de 30 a 80 clientes, tu plan cuesta lo mismo y tu despacho factura más — ese es el punto.</p>
+        </details>
+        <details class="card faq">
+          <summary>¿Cómo descargan los XML si el SAT se cae a cada rato?</summary>
+          <p>Usamos el Web Service oficial de descarga masiva con la e.firma de cada contribuyente (cifrada, nunca compartida). Cuando el SAT responde con errores o se tarda, el robot reintenta con esperas progresivas durante toda la noche y te deja bitácora de cada intento. Tú ves resultados, no errores 500.</p>
+        </details>
+        <details class="card faq">
+          <summary>¿Qué pasa con mis datos si me quiero ir?</summary>
+          <p>Exportas todo — clientes, XML, pólizas, papeles de trabajo — en formatos estándar (CSV/XML/PDF) con un clic, en cualquier momento. Sin penalizaciones, sin retención, sin «llámanos para cancelar».</p>
+        </details>
+        <details class="card faq">
+          <summary>¿La cobranza automática no va a enojar a mis clientes?</summary>
+          <p>Los mensajes salen a nombre de tu despacho, con tu tono (las plantillas son editables) y una secuencia gradual: recordatorio amable → segundo aviso → aviso de suspensión → suspensión del portal. La experiencia de despachos que automatizan cobranza es que la cartera vencida baja sin perder clientes: los que pagan tarde simplemente necesitaban el empujón. Y tú dejas de ser el malo de la película.</p>
+        </details>
+        <details class="card faq">
+          <summary>¿Sustituye a mi CONTPAQi?</summary>
+          <p>Para la operación del despacho multi-cliente (XML, semáforo, impuestos, DIOT, portal, cobranza), sí. Si tu flujo depende de módulos muy específicos de escritorio, puedes usar ContaFlow encima — importamos y exportamos en formatos compatibles — y migrar a tu ritmo. El plan Firma incluye migración asistida.</p>
+        </details>
+        <details class="card faq">
+          <summary>¿Las tarifas y reglas están actualizadas a 2026?</summary>
+          <p>Sí: tarifas ISR del Anexo 8 RMF 2026 (DOF 28-dic-2025, actualización por inflación de 13.21%), tasas RESICO de ley, calendario con día 17 recorrido a día hábil y facilidad del 6º dígito del RFC, DIOT con facilidad a fin de mes y la multa del buzón aplicable desde 2027. Cuando el SAT publica cambios, los cargamos nosotros — sin costo de «renovación anual».</p>
+        </details>
+        <details class="card faq">
+          <summary>¿Es seguro darles la e.firma de mis clientes?</summary>
+          <p>Las credenciales se almacenan cifradas (AES-256), se usan exclusivamente para los servicios del SAT que tú autorizas y cada uso queda en bitácora. Nunca las ve un humano, nunca salen del entorno de descarga. Puedes revocar el acceso por cliente en cualquier momento.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CTA FINAL ============================= -->
+  <section class="final-cta">
+    <div class="container center">
+      <h2>El mes que entra puede cerrar solo.</h2>
+      <p>Prueba la demo con un despacho de ejemplo: robot de XML, semáforo, impuestos 2026, cobranza y portal del cliente. Sin registro.</p>
+      <a class="btn btn-light" href="app.html">▶ Abrir la demo de ContaFlow</a>
+    </div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="container foot-grid">
+      <div>
+        <div class="brand"><span class="brand-mark">C</span><span class="brand-name" style="color:#fff">ContaFlow</span></div>
+        <p style="color:#93a3cc;font-size:.85rem;max-width:340px">El sistema operativo del despacho contable mexicano. Hecho para que los contadores ganen tiempo, clientes y tranquilidad.</p>
+      </div>
+      <div>
+        <h4>Producto</h4>
+        <a href="app.html">Demo en vivo</a>
+        <a href="#producto">Funciones</a>
+        <a href="#precios">Precios</a>
+        <a href="#comparativa">Comparativa</a>
+      </div>
+      <div>
+        <h4>Recursos</h4>
+        <a href="app.html">Calculadora ISR 2026</a>
+        <a href="app.html">Calendario fiscal 2026</a>
+        <a href="docs/INVESTIGACION.md">Nuestra investigación</a>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <a href="mailto:hola@contaflow.mx">hola@contaflow.mx</a>
+        <a href="#">WhatsApp</a>
+      </div>
+    </div>
+    <div class="container foot-legal">
+      <p>© 2026 ContaFlow (nombre provisional). Sitio de demostración: cifras, marcas y testimonios de terceros se citan con fines comparativos e informativos; verifica precios vigentes con cada proveedor. Esta página no constituye asesoría fiscal.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/landing.js"></script>
+</body>
+</html>

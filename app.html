@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContaFlow — Panel del despacho (demo)</title>
+  <meta name="description" content="Demo funcional del panel ContaFlow: semáforo fiscal multi-cliente, calculadora de impuestos 2026, monitor de CFDI, calendario fiscal y cobranza automática." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📊</text></svg>" />
+</head>
+<body class="app-body">
+
+  <div class="demo-banner">
+    🧪 <strong>Modo demostración</strong> — datos ficticios. Lo que ves es el producto real funcionando con un despacho de ejemplo.
+    <a href="index.html#precios">Quiero mi cuenta →</a>
+  </div>
+
+  <div class="app-shell">
+    <!-- ============================ SIDEBAR ============================ -->
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">ContaFlow</span>
+      </a>
+
+      <nav class="side-nav" id="sideNav">
+        <button class="nav-item active" data-view="resumen"><span class="nav-ico">◳</span> Resumen</button>
+        <button class="nav-item" data-view="clientes"><span class="nav-ico">👥</span> Clientes <span class="nav-count" id="navClientes"></span></button>
+        <button class="nav-item" data-view="impuestos"><span class="nav-ico">🧮</span> Impuestos 2026</button>
+        <button class="nav-item" data-view="cfdi"><span class="nav-ico">⬇️</span> CFDI / XML <span class="nav-alert" id="navCfdiAlert"></span></button>
+        <button class="nav-item" data-view="calendario"><span class="nav-ico">📅</span> Calendario fiscal</button>
+        <button class="nav-item" data-view="cobranza"><span class="nav-ico">💸</span> Cobranza <span class="nav-alert" id="navCobranzaAlert"></span></button>
+        <button class="nav-item" data-view="portal"><span class="nav-ico">🤝</span> Portal del cliente</button>
+      </nav>
+
+      <div class="side-foot">
+        <div class="user-chip">
+          <div class="avatar">AR</div>
+          <div>
+            <div class="strong" style="font-size:.86rem">CPC Alejandra Ríos</div>
+            <small>Ríos &amp; Asociados</small>
+          </div>
+        </div>
+        <a class="btn btn-primary btn-sm w100" href="index.html#precios" style="margin-top:12px">Contratar ContaFlow</a>
+      </div>
+    </aside>
+
+    <!-- ============================ MAIN =============================== -->
+    <div class="main-col">
+      <header class="topbar">
+        <button class="hamburger" id="hamburger" aria-label="Abrir menú">☰</button>
+        <div class="search-wrap">
+          <input class="input" id="globalSearch" type="search" placeholder="Buscar cliente o RFC…  (la búsqueda filtra la vista de clientes)" />
+        </div>
+        <div class="topbar-right">
+          <span class="badge badge-ok"><span class="dot dot-ok"></span> SAT en línea</span>
+          <span class="muted" style="font-size:.85rem">mié 10 jun 2026</span>
+        </div>
+      </header>
+
+      <main class="view-host" id="viewHost">
+        <!-- Las vistas se renderizan aquí con JS -->
+      </main>
+    </div>
+  </div>
+
+  <!-- ====================== MODAL: cliente nuevo/editar ================= -->
+  <div class="overlay" id="overlay"></div>
+
+  <div class="modal" id="clientModal" role="dialog" aria-modal="true" aria-labelledby="clientModalTitle">
+    <div class="modal-head">
+      <h3 id="clientModalTitle">Nuevo cliente</h3>
+      <button class="x-btn" data-close>✕</button>
+    </div>
+    <form id="clientForm" novalidate>
+      <input type="hidden" id="cId" />
+      <label class="field"><span class="lbl">Nombre o razón social</span>
+        <input class="input" id="cNombre" required placeholder="Ej. Comercial Pacífico, S.A. de C.V." />
+      </label>
+      <label class="field"><span class="lbl">RFC</span>
+        <input class="input mono" id="cRfc" maxlength="13" placeholder="Ej. CPA200101AB1" style="text-transform:uppercase" />
+        <span class="hint" id="rfcHint">Validamos estructura y fecha en tiempo real.</span>
+      </label>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <label class="field"><span class="lbl">Régimen fiscal</span>
+          <select class="input" id="cRegimen">
+            <option>General de Ley PM</option>
+            <option>RESICO PF</option>
+            <option>RESICO PM</option>
+            <option>Actividad Empresarial y Profesional</option>
+            <option>Sueldos y salarios</option>
+            <option>Arrendamiento</option>
+            <option>Plataformas tecnológicas</option>
+          </select>
+        </label>
+        <label class="field"><span class="lbl">Iguala mensual (MXN)</span>
+          <input class="input" id="cIguala" type="number" min="0" step="100" value="2000" />
+        </label>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <label class="field"><span class="lbl">Correo</span>
+          <input class="input" id="cEmail" type="email" placeholder="contacto@cliente.mx" />
+        </label>
+        <label class="field"><span class="lbl">Teléfono / WhatsApp</span>
+          <input class="input" id="cTel" placeholder="55 0000 0000" />
+        </label>
+      </div>
+      <div class="flex between" style="margin-top:6px">
+        <small class="muted">Al guardar se programa la descarga de XML y los recordatorios.</small>
+        <div class="flex">
+          <button type="button" class="btn btn-ghost btn-sm" data-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar cliente</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- ====================== DRAWER: detalle de cliente ================== -->
+  <aside class="drawer" id="clientDrawer" aria-label="Detalle del cliente"></aside>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <script src="assets/js/fiscal.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
