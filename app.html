@@ -14,6 +14,8 @@
 </head>
 <body class="app-body">
 
+  <a class="skip-link" href="#viewHost">Saltar al contenido</a>
+
   <div class="demo-banner">
     🧪 <strong>Modo demostración</strong> — datos ficticios. Lo que ves es el producto real funcionando con un despacho de ejemplo.
     <a href="index.html#precios">Quiero mi cuenta →</a>
@@ -21,7 +23,7 @@
 
   <div class="app-shell">
     <!-- ============================ SIDEBAR ============================ -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
       <a class="brand" href="index.html">
         <span class="brand-mark">C</span>
         <span class="brand-name">ContaFlow</span>
@@ -39,34 +41,49 @@
 
       <div class="side-foot">
         <div class="user-chip">
-          <div class="avatar">AR</div>
+          <div class="avatar" aria-hidden="true">AR</div>
           <div>
             <div class="strong" style="font-size:.86rem">CPC Alejandra Ríos</div>
             <small>Ríos &amp; Asociados</small>
           </div>
         </div>
         <a class="btn btn-primary btn-sm w100" href="index.html#precios" style="margin-top:12px">Contratar ContaFlow</a>
+        <div class="side-links">
+          <button class="side-link" id="btnTour">▶ Ver tour de bienvenida</button>
+          <button class="side-link" id="btnReset">↺ Restablecer datos de la demo</button>
+        </div>
       </div>
     </aside>
 
     <!-- ============================ MAIN =============================== -->
     <div class="main-col">
       <header class="topbar">
-        <button class="hamburger" id="hamburger" aria-label="Abrir menú">☰</button>
-        <div class="search-wrap">
-          <input class="input" id="globalSearch" type="search" placeholder="Buscar cliente o RFC…  (la búsqueda filtra la vista de clientes)" />
-        </div>
+        <button class="hamburger" id="hamburger" aria-label="Abrir menú de navegación">☰</button>
+        <button class="palette-btn" id="paletteBtn" aria-label="Buscar cliente o acción">
+          <span aria-hidden="true">🔍</span>
+          <span class="palette-btn-txt">Buscar cliente, RFC o acción…</span>
+          <kbd>Ctrl</kbd><kbd>K</kbd>
+        </button>
         <div class="topbar-right">
           <span class="badge badge-ok"><span class="dot dot-ok"></span> SAT en línea</span>
           <span class="muted" style="font-size:.85rem">mié 10 jun 2026</span>
         </div>
       </header>
 
-      <main class="view-host" id="viewHost">
+      <main class="view-host" id="viewHost" tabindex="-1">
         <!-- Las vistas se renderizan aquí con JS -->
       </main>
     </div>
   </div>
+
+  <!-- ================== BARRA INFERIOR (móvil) ======================== -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Navegación rápida">
+    <button class="bn-item active" data-view="resumen"><span aria-hidden="true">◳</span>Resumen</button>
+    <button class="bn-item" data-view="clientes"><span aria-hidden="true">👥</span>Clientes</button>
+    <button class="bn-item" data-view="impuestos"><span aria-hidden="true">🧮</span>Impuestos</button>
+    <button class="bn-item" data-view="cfdi"><span aria-hidden="true">⬇️</span>CFDI</button>
+    <button class="bn-item" id="bnMore" aria-label="Más opciones"><span aria-hidden="true">☰</span>Más</button>
+  </nav>
 
   <!-- ====================== MODAL: cliente nuevo/editar ================= -->
   <div class="overlay" id="overlay"></div>
@@ -74,7 +91,7 @@
   <div class="modal" id="clientModal" role="dialog" aria-modal="true" aria-labelledby="clientModalTitle">
     <div class="modal-head">
       <h3 id="clientModalTitle">Nuevo cliente</h3>
-      <button class="x-btn" data-close>✕</button>
+      <button class="x-btn" data-close aria-label="Cerrar">✕</button>
     </div>
     <form id="clientForm" novalidate>
       <input type="hidden" id="cId" />
@@ -97,7 +114,7 @@
             <option>Plataformas tecnológicas</option>
           </select>
         </label>
-        <label class="field"><span class="lbl">Iguala mensual (MXN)</span>
+        <label class="field"><span class="lbl"><span class="term" data-tip="Honorarios fijos mensuales que cobras a este cliente">Iguala</span> mensual (MXN)</span>
           <input class="input" id="cIguala" type="number" min="0" step="100" value="2000" />
         </label>
       </div>
@@ -120,7 +137,22 @@
   </div>
 
   <!-- ====================== DRAWER: detalle de cliente ================== -->
-  <aside class="drawer" id="clientDrawer" aria-label="Detalle del cliente"></aside>
+  <aside class="drawer" id="clientDrawer" aria-label="Expediente del cliente"></aside>
+
+  <!-- ====================== PALETA DE COMANDOS (Ctrl+K) ================= -->
+  <div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Búsqueda y acciones rápidas" hidden>
+    <div class="palette-box">
+      <input class="palette-input" id="paletteInput" placeholder="Escribe un cliente, RFC o acción… (ej. “Carrillo”, “IVA”, “nuevo”)" autocomplete="off" spellcheck="false" aria-label="Buscar" />
+      <div class="palette-results" id="paletteResults" role="listbox"></div>
+      <div class="palette-foot"><kbd>↑</kbd><kbd>↓</kbd> navegar · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> cerrar</div>
+    </div>
+  </div>
+
+  <!-- ====================== TOUR DE BIENVENIDA ========================== -->
+  <div id="tour" hidden>
+    <div class="tour-ring" id="tourRing"></div>
+    <div class="tour-card" id="tourCard" role="dialog" aria-modal="true" aria-live="polite"></div>
+  </div>
 
   <div id="toasts" aria-live="polite"></div>
 

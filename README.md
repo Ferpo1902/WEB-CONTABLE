@@ -47,9 +47,33 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
   miedo al abandono tipo QuickBooks).
 
 ### `app.html` — Demo funcional del panel (sin registro)
+
+**Diseñado para usarse sin manual.** La capa de usabilidad incluye:
+- **Tour de bienvenida** de 4 pasos en la primera visita (omitible, repetible
+  desde la barra lateral o con Ctrl+K → "tour").
+- **Paleta de comandos `Ctrl+K`**: encuentra clientes por nombre/RFC/régimen
+  (ignora acentos) y ejecuta acciones directas — "nuevo cliente", "calcular
+  IVA", "simular descarga" — con teclado (↑ ↓ Enter Esc).
+- **Pendientes de hoy**: las alertas se convierten en una lista palomeable con
+  barra de progreso; cada pendiente trae su acción a un clic y el palomeo se
+  deshace desde el propio aviso.
+- **Semáforo editable**: en el expediente, cada obligación cambia de estatus
+  con un clic (con "Deshacer"); los cambios persisten en `localStorage`.
+- **Calculadora precargable por cliente**: al elegir un cliente (o llegar desde
+  su expediente), la pestaña del régimen y el coeficiente de utilidad se
+  llenan solos; el papel de trabajo sale a su nombre. La captura **se guarda
+  sola** por pestaña y los montos se muestran formateados en pesos al teclear.
+- **Glosario fiscal integrado**: tooltips en términos como DIOT, 32-D, 69-B,
+  REP/PPD y coeficiente de utilidad — útil para personal junior.
+- **Móvil de verdad**: barra de navegación inferior tipo app, objetivos
+  táctiles ≥48 px y vistas a una mano.
+- **Accesibilidad**: navegación completa por teclado, foco visible,
+  `aria-current`/`aria-label`, skip-link y respeto a `prefers-reduced-motion`.
+- **Restablecer demo** en un clic (barra lateral) para volver al estado inicial.
+
 | Vista | Qué demuestra |
 |---|---|
-| **Resumen** | Semáforo de cartera, alertas críticas (69-B, buzón, 32-D), actividad de la noche |
+| **Resumen** | Pendientes de hoy palomeables + semáforo de cartera, alertas críticas (69-B, buzón, 32-D), actividad de la noche |
 | **Clientes** | CRUD real con validación de RFC en vivo y persistencia en `localStorage`; expediente con días extra por 6º dígito del RFC |
 | **Impuestos 2026** | Calculadora funcional: RESICO PF, Actividad Empresarial (acumulados Art. 106), PM 30% con coeficiente, sueldos e IVA — con papel de trabajo copiable/imprimible y la tarifa aplicada resaltada |
 | **CFDI / XML** | Simulador del robot de descarga masiva con reintentos ante errores del SAT + monitor de riesgos (EFOS 69-B, duplicados, PPD sin REP, cancelados) |

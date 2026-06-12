@@ -209,3 +209,64 @@ table.tbl tbody tr:hover { background: var(--blue-50); }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+
+/* ----------------------------- Accesibilidad ---------------------------- */
+:focus-visible {
+  outline: 3px solid var(--blue-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.skip-link {
+  position: absolute; left: 12px; top: -60px; z-index: 300;
+  background: var(--navy-900); color: #fff; font: 600 0.85rem var(--font);
+  padding: 10px 16px; border-radius: 0 0 10px 10px; transition: top 0.15s;
+}
+.skip-link:focus { top: 0; text-decoration: none; }
+
+kbd {
+  font: 600 0.7rem/1 var(--mono);
+  background: var(--muted-bg); color: var(--ink-700);
+  border: 1px solid var(--line); border-bottom-width: 2px;
+  border-radius: 5px; padding: 3px 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ------------------- Tooltips de glosario (data-tip) -------------------- */
+.term {
+  border-bottom: 1.5px dotted var(--ink-300);
+  cursor: help;
+}
+[data-tip] { position: relative; }
+[data-tip]:hover::after, [data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute; z-index: 250;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: 260px;
+  background: var(--navy-900); color: #e7edff;
+  font: 500 0.78rem/1.45 var(--font); text-transform: none; letter-spacing: 0;
+  padding: 9px 12px; border-radius: 9px; box-shadow: var(--shadow-lg);
+  white-space: normal; text-align: left; pointer-events: none;
+}
+[data-tip]:hover::before, [data-tip]:focus-visible::before {
+  content: ''; position: absolute; z-index: 250;
+  bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--navy-900);
+  pointer-events: none;
+}
+
+/* Toast con botón de acción (Deshacer) */
+.toast { display: flex; align-items: center; gap: 14px; }
+.toast .toast-act {
+  border: 1px solid rgba(255, 255, 255, 0.35); background: none; color: #8db0ff;
+  font: 700 0.8rem var(--font); padding: 6px 12px; border-radius: 7px;
+  cursor: pointer; white-space: nowrap;
+}
+.toast .toast-act:hover { background: rgba(255, 255, 255, 0.1); }
