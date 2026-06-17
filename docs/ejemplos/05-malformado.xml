@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EJEMPLO FICTICIO de XML ROTO (etiqueta sin cerrar) para comprobar que el
+     parser muestra un error claro en vez de tronar. -->
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" Version="4.0" Total="11600.00" TipoDeComprobante="I" MetodoPago="PUE">
+  <cfdi:Emisor Rfc="DLP190304MN8" Nombre="DISTRIBUIDORA LA PAZ" RegimenFiscal="601">
+  <cfdi:Receptor Rfc="CMN160218R52" Nombre="CLIENTE MAYORISTA NORTE" UsoCFDI="G03"/>
+</cfdi:Comprobante>

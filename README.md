@@ -76,7 +76,7 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 | **Resumen** | Pendientes de hoy palomeables + semáforo de cartera, alertas críticas (69-B, buzón, 32-D), actividad de la noche |
 | **Clientes** | CRUD real con validación de RFC en vivo y persistencia en `localStorage`; expediente con días extra por 6º dígito del RFC |
 | **Impuestos 2026** | Calculadora funcional: RESICO PF, Actividad Empresarial (acumulados Art. 106), PM 30% con coeficiente, sueldos e IVA — con papel de trabajo copiable/imprimible y la tarifa aplicada resaltada |
-| **CFDI / XML** | Simulador del robot de descarga masiva con reintentos ante errores del SAT + monitor de riesgos (EFOS 69-B, duplicados, PPD sin REP, cancelados) |
+| **CFDI / XML** | **Lector real de CFDI 4.0**: sube o arrastra tus XML y se parsean en el navegador (emisor/receptor, PUE/PPD, IVA 16/8/0/exento, retenciones, UUID) + simulador del robot de descarga y monitor de riesgos (EFOS 69-B, duplicados, PPD sin REP, cancelados) |
 | **Calendario fiscal** | Generado por reglas: día 17 → día hábil, DIOT fin de mes, anuales, PTU, multa de buzón 2027 |
 | **Cobranza** | Aging de igualas, recordatorio automático estilo WhatsApp y suspensión de portal |
 | **Portal del cliente** | Lo que ve el cliente final: checklist de documentos, su impuesto estimado, zona de carga |
@@ -90,6 +90,15 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
   (Decreto de facilidades Art. 5.1).
 - Calendario 2026 generado por reglas con días inhábiles y recorrido a hábil.
 
+### Lector de CFDI (`assets/js/cfdi.js`)
+- Parser de **CFDI 4.0** 100 % en el navegador (`DOMParser`): acepta uno o varios
+  XML y extrae emisor/receptor, tipo (Ingreso/Egreso/Pago/Nómina), método de pago
+  (PUE/PPD), totales, desglose de IVA (16/8/0/exento) y retenciones (IVA/ISR),
+  UUID del timbre y los documentos relacionados de los complementos de Pago (REP).
+- Tolerante a prefijos de namespace y con manejo de errores para XML mal formados.
+- **Privacidad:** ningún archivo sale del equipo; los datos viven solo en memoria.
+- Archivos de prueba en [`docs/ejemplos/`](docs/ejemplos/).
+
 ## Estructura
 
 ```
@@ -97,8 +106,9 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 ├── app.html                # Demo del panel
 ├── assets/
 │   ├── css/ base.css · landing.css · app.css
-│   └── js/  fiscal.js · data.js · app.js · landing.js
+│   └── js/  fiscal.js · data.js · cfdi.js · app.js · landing.js
 ├── docs/INVESTIGACION.md   # Investigación de mercado con fuentes
+├── docs/ejemplos/          # XML de prueba (CFDI 4.0) para el lector
 └── README.md
 ```
 

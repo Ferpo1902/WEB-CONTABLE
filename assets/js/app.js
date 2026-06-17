@@ -33,6 +33,7 @@
     calcTab: 'resico',
     calcClienteId: '',
     robotCorriendo: false,
+    cfdiReales: [], // CFDI subidos por el usuario y parseados (solo en memoria).
   };
   const hechos = new Set(leerLS(LS.hechos, []));
   const calcStore = leerLS(LS.calc, {});
@@ -561,7 +562,23 @@
     const riesgos = D.CFDIS.filter((x) => x.riesgo);
     return `
       <h1 class="view-title">CFDI / XML</h1>
-      <p class="view-sub">El robot descarga los XML de todos tus clientes cada noche, con reintentos automáticos cuando el SAT se satura. Tú solo revisas los riesgos.</p>
+      <p class="view-sub">Sube tus XML y ContaFlow los lee al instante en tu navegador; o deja que el robot los descargue solo cada noche. Tú solo revisas los riesgos.</p>
+
+      <div class="card card-pad cfdi-upload" style="margin-bottom:16px">
+        <div class="flex between wrap">
+          <div>
+            <h3 class="mb0">📂 Sube tus XML (CFDI 4.0)</h3>
+            <small class="muted">Se procesan aquí, en tu navegador. Ningún archivo sale de tu equipo. 🔒</small>
+          </div>
+          ${state.cfdiReales.length ? `<button class="btn btn-ghost btn-sm" id="btnLimpiarCfdi">Limpiar (${state.cfdiReales.length})</button>` : ''}
+        </div>
+        <div class="upload-zone" id="cfdiDrop" style="margin-top:12px" tabindex="0" role="button" aria-label="Subir archivos XML de CFDI">
+          📎 Arrastra aquí tus XML o haz clic para elegir (puedes seleccionar varios)
+        </div>
+        <input type="file" id="cfdiFileInput" accept=".xml,text/xml,application/xml" multiple hidden />
+        <div id="cfdiRealResults">${state.cfdiReales.length ? htmlCfdiReales() : ''}</div>
+        <p class="hint" style="margin-top:10px">¿No tienes XML a la mano? En el proyecto hay archivos de prueba en <span class="mono">docs/ejemplos/</span>.</p>
+      </div>
 
       <div class="robot-panel">
         <div class="flex between wrap">
@@ -611,6 +628,57 @@
       case 'cancelado_emisor': return '<span class="badge badge-warn">Cancelado por emisor</span>';
       default: return '<span class="badge badge-muted">—</span>';
     }
+  }
+
+  /** Construye el resumen + tabla de los CFDI que el usuario subió. */
+  function htmlCfdiReales() {
+    const lista = state.cfdiReales;
+    if (!lista.length) return '';
+    const R = window.CFDI.resumir(lista);
+    const validos = lista.filter((x) => x.ok);
+    const errores = lista.filter((x) => !x.ok);
+    return `
+      <div class="kpi-grid" style="margin:16px 0">
+        <div class="card kpi"><div class="kpi-label">Comprobantes leídos</div><div class="kpi-value">${R.validos}</div><div class="kpi-foot">${R.conError ? `${R.conError} con error` : 'todos válidos'}</div></div>
+        <div class="card kpi"><div class="kpi-label">Por tipo</div><div class="kpi-value" style="font-size:1.05rem">${R.ingresos}·I ${R.egresos}·E ${R.pagos}·P ${R.nomina}·N</div><div class="kpi-foot">Ingreso · Egreso · Pago · Nómina</div></div>
+        <div class="card kpi"><div class="kpi-label">IVA trasladado</div><div class="kpi-value">${F.fmtMXN(R.ivaTrasladado)}</div><div class="kpi-foot">Retenido: ${F.fmtMXN(R.retenido)}</div></div>
+        <div class="card kpi"><div class="kpi-label">Base IVA 16%</div><div class="kpi-value" style="font-size:1.05rem">${F.fmtMXN(R.baseIva16)}</div><div class="kpi-foot">8%: ${F.fmtMXN(R.baseIva8)} · 0%: ${F.fmtMXN(R.baseIva0)} · Ex: ${F.fmtMXN(R.baseExento)}</div></div>
+      </div>
+      ${errores.length ? `<div class="alert-row alert-warn"><span class="a-ico">⚠️</span><span>${errores.length} archivo(s) no se pudieron leer: ${errores.map((e) => `<strong>${esc(e.archivo)}</strong> (${esc(e.errores[0])})`).join('; ')}</span></div>` : ''}
+      <div class="card table-wrap" style="margin-top:12px">
+        <table class="tbl">
+          <thead><tr><th>UUID</th><th>Tipo</th><th>Emisor</th><th>Receptor</th><th>Método</th><th class="num">Subtotal</th><th class="num">IVA 16%</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            ${validos.map((x) => `
+              <tr>
+                <td class="mono"><small>${esc(x.uuid ? x.uuid.slice(0, 8) + '…' : '— sin UUID —')}</small></td>
+                <td><span class="badge badge-muted">${esc(x.tipoLabel)}</span></td>
+                <td><small>${esc(x.emisor.nombre || x.emisor.rfc || '—')}</small></td>
+                <td><small>${esc(x.receptor.nombre || x.receptor.rfc || '—')}</small></td>
+                <td>${x.metodoPago ? `<span class="badge ${x.metodoPago === 'PPD' ? 'badge-warn' : 'badge-blue'}">${esc(x.metodoPago)}</span>` : '—'}</td>
+                <td class="num">${F.fmtMXN(x.subtotal)}</td>
+                <td class="num">${x.impuestos.iva16.importe ? F.fmtMXN(x.impuestos.iva16.importe) : '—'}</td>
+                <td class="num">${F.fmtMXN(x.total)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <p class="hint" style="margin-top:10px">Estos datos viven solo en esta sesión (no se guardan en disco). En el siguiente paso, de aquí saldrá la DIOT y el cruce de REP.</p>`;
+  }
+
+  /** Lee los XML elegidos (input o drag&drop) y los agrega al estado. */
+  async function procesarArchivosCFDI(fileList) {
+    const archivos = Array.from(fileList || []).filter(
+      (f) => /\.xml$/i.test(f.name) || (f.type || '').includes('xml')
+    );
+    if (!archivos.length) { toast('Selecciona uno o más archivos .xml', 'warn'); return; }
+    toast('Procesando XML en tu navegador…');
+    const resultados = await Promise.all(archivos.map((f) => window.CFDI.parseArchivo(f)));
+    state.cfdiReales = state.cfdiReales.concat(resultados);
+    if (state.view === 'cfdi') render();
+    const okN = resultados.filter((r) => r.ok).length;
+    const errN = resultados.length - okN;
+    toast(`${okN} CFDI leído(s) ✅${errN ? ` · ${errN} con error` : ''}`);
   }
 
   function correrRobot() {
@@ -844,6 +912,26 @@
     }
     if (state.view === 'cfdi') {
       $('#btnRobot')?.addEventListener('click', correrRobot);
+      // Zona de carga real de XML (sube/arrastra → parsea en el navegador).
+      const drop = $('#cfdiDrop');
+      const input = $('#cfdiFileInput');
+      if (drop && input) {
+        drop.addEventListener('click', () => input.click());
+        drop.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+        });
+        ['dragover', 'dragenter'].forEach((ev) =>
+          drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('drag'); }));
+        ['dragleave', 'drop'].forEach((ev) =>
+          drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('drag'); }));
+        drop.addEventListener('drop', (e) => procesarArchivosCFDI(e.dataTransfer.files));
+        input.addEventListener('change', (e) => { procesarArchivosCFDI(e.target.files); e.target.value = ''; });
+      }
+      $('#btnLimpiarCfdi')?.addEventListener('click', () => {
+        state.cfdiReales = [];
+        render();
+        toast('Lista de XML vaciada.');
+      });
     }
     if (state.view === 'portal') {
       const z = $('#uploadZone');

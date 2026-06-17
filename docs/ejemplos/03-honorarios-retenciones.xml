@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EJEMPLO FICTICIO. Honorarios PF->PM: IVA 16% trasladado, retención de
+     ISR 10% y retención de IVA 2/3 (10.6667%). Sirve para probar el desglose
+     de retenciones que necesita la DIOT. -->
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd" Version="4.0" Serie="H" Folio="312" Fecha="2026-06-06T09:00:00" Sello="SELLO_DEMO==" FormaPago="03" NoCertificado="30001000000500003416" Certificado="CERT_DEMO==" SubTotal="20000.00" Moneda="MXN" Total="19066.67" TipoDeComprobante="I" Exportacion="01" MetodoPago="PUE" LugarExpedicion="01000">
+  <cfdi:Emisor Rfc="ROVL920728B41" Nombre="LUIS RODRIGUEZ VEGA" RegimenFiscal="612"/>
+  <cfdi:Receptor Rfc="CAN170303DE9" Nombre="CORPORATIVO ANDES" DomicilioFiscalReceptor="03100" RegimenFiscalReceptor="601" UsoCFDI="G03"/>
+  <cfdi:Conceptos>
+    <cfdi:Concepto ClaveProdServ="84111506" Cantidad="1" ClaveUnidad="E48" Descripcion="Servicios profesionales de consultoria" ValorUnitario="20000.00" Importe="20000.00" ObjetoImp="02">
+      <cfdi:Impuestos>
+        <cfdi:Traslados>
+          <cfdi:Traslado Base="20000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="3200.00"/>
+        </cfdi:Traslados>
+        <cfdi:Retenciones>
+          <cfdi:Retencion Base="20000.00" Impuesto="001" TipoFactor="Tasa" TasaOCuota="0.100000" Importe="2000.00"/>
+          <cfdi:Retencion Base="20000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.106667" Importe="2133.33"/>
+        </cfdi:Retenciones>
+      </cfdi:Impuestos>
+    </cfdi:Concepto>
+  </cfdi:Conceptos>
+  <cfdi:Impuestos TotalImpuestosRetenidos="4133.33" TotalImpuestosTrasladados="3200.00">
+    <cfdi:Retenciones>
+      <cfdi:Retencion Impuesto="001" Importe="2000.00"/>
+      <cfdi:Retencion Impuesto="002" Importe="2133.33"/>
+    </cfdi:Retenciones>
+    <cfdi:Traslados>
+      <cfdi:Traslado Base="20000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="3200.00"/>
+    </cfdi:Traslados>
+  </cfdi:Impuestos>
+  <cfdi:Complemento>
+    <tfd:TimbreFiscalDigital xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital" Version="1.1" UUID="C3D4E5F6-3333-4C7D-AE1F-000000000312" FechaTimbrado="2026-06-06T09:00:40" RfcProvCertif="SAT970701NN3" SelloCFD="SELLO_DEMO==" NoCertificadoSAT="30001000000500003456" SelloSAT="SELLO_SAT_DEMO=="/>
+  </cfdi:Complemento>
+</cfdi:Comprobante>

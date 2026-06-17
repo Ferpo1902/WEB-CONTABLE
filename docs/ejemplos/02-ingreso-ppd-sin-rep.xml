@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EJEMPLO FICTICIO. Venta a crédito (PPD): exige un REP que aún no existe.
+     Su UUID es referenciado por el archivo 04-pago-rep.xml. -->
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd" Version="4.0" Serie="B" Folio="2048" Fecha="2026-06-05T13:40:00" Sello="SELLO_DEMO==" FormaPago="99" NoCertificado="30001000000500003416" Certificado="CERT_DEMO==" SubTotal="50000.00" Moneda="MXN" Total="58000.00" TipoDeComprobante="I" Exportacion="01" MetodoPago="PPD" LugarExpedicion="64000">
+  <cfdi:Emisor Rfc="TAC150612QW3" Nombre="TALLER AUTOMOTRIZ CARRILLO" RegimenFiscal="601"/>
+  <cfdi:Receptor Rfc="RNO180510AB2" Nombre="REFACCIONARIA DEL NORTE" DomicilioFiscalReceptor="64500" RegimenFiscalReceptor="601" UsoCFDI="G03"/>
+  <cfdi:Conceptos>
+    <cfdi:Concepto ClaveProdServ="25172700" Cantidad="1" ClaveUnidad="E48" Descripcion="Servicio de mantenimiento de flotilla" ValorUnitario="50000.00" Importe="50000.00" ObjetoImp="02">
+      <cfdi:Impuestos>
+        <cfdi:Traslados>
+          <cfdi:Traslado Base="50000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="8000.00"/>
+        </cfdi:Traslados>
+      </cfdi:Impuestos>
+    </cfdi:Concepto>
+  </cfdi:Conceptos>
+  <cfdi:Impuestos TotalImpuestosTrasladados="8000.00">
+    <cfdi:Traslados>
+      <cfdi:Traslado Base="50000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="8000.00"/>
+    </cfdi:Traslados>
+  </cfdi:Impuestos>
+  <cfdi:Complemento>
+    <tfd:TimbreFiscalDigital xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital" Version="1.1" UUID="B2C3D4E5-2222-4B6C-9D0E-000000002048" FechaTimbrado="2026-06-05T13:40:25" RfcProvCertif="SAT970701NN3" SelloCFD="SELLO_DEMO==" NoCertificadoSAT="30001000000500003456" SelloSAT="SELLO_SAT_DEMO=="/>
+  </cfdi:Complemento>
+</cfdi:Comprobante>
