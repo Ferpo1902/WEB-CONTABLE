@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EJEMPLO FICTICIO. Factura PPD (a crédito) de un proveedor a REFACCIONARIA
+     DEL NORTE que NO tiene complemento de pago (REP) entre los XML cargados.
+     El validador debe marcarla como "PPD sin REP" (riesgo de multa). -->
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd" Version="4.0" Serie="G" Folio="3300" Fecha="2026-06-02T15:00:00" Sello="SELLO_DEMO==" FormaPago="99" NoCertificado="30001000000500003416" Certificado="CERT_DEMO==" SubTotal="20000.00" Moneda="MXN" Total="23200.00" TipoDeComprobante="I" Exportacion="01" MetodoPago="PPD" LugarExpedicion="64500">
+  <cfdi:Emisor Rfc="DRO190101AB4" Nombre="DISTRIBUIDORA EL ROBLE" RegimenFiscal="601"/>
+  <cfdi:Receptor Rfc="RNO180510AB2" Nombre="REFACCIONARIA DEL NORTE" DomicilioFiscalReceptor="64500" RegimenFiscalReceptor="601" UsoCFDI="G03"/>
+  <cfdi:Conceptos>
+    <cfdi:Concepto ClaveProdServ="31161500" Cantidad="1" ClaveUnidad="H87" Descripcion="Lote de refacciones a credito" ValorUnitario="20000.00" Importe="20000.00" ObjetoImp="02">
+      <cfdi:Impuestos>
+        <cfdi:Traslados>
+          <cfdi:Traslado Base="20000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="3200.00"/>
+        </cfdi:Traslados>
+      </cfdi:Impuestos>
+    </cfdi:Concepto>
+  </cfdi:Conceptos>
+  <cfdi:Impuestos TotalImpuestosTrasladados="3200.00">
+    <cfdi:Traslados>
+      <cfdi:Traslado Base="20000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.160000" Importe="3200.00"/>
+    </cfdi:Traslados>
+  </cfdi:Impuestos>
+  <cfdi:Complemento>
+    <tfd:TimbreFiscalDigital xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital" Version="1.1" UUID="C9D0E1F2-9999-42C3-E475-000000003300" FechaTimbrado="2026-06-02T15:00:20" RfcProvCertif="SAT970701NN3" SelloCFD="SELLO_DEMO==" NoCertificadoSAT="30001000000500003456" SelloSAT="SELLO_SAT_DEMO=="/>
+  </cfdi:Complemento>
+</cfdi:Comprobante>

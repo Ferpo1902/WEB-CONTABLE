@@ -76,7 +76,7 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 | **Resumen** | Pendientes de hoy palomeables + semáforo de cartera, alertas críticas (69-B, buzón, 32-D), actividad de la noche |
 | **Clientes** | CRUD real con validación de RFC en vivo y persistencia en `localStorage`; expediente con días extra por 6º dígito del RFC |
 | **Impuestos 2026** | Calculadora funcional: RESICO PF, Actividad Empresarial (acumulados Art. 106), PM 30% con coeficiente, sueldos e IVA — con papel de trabajo copiable/imprimible y la tarifa aplicada resaltada |
-| **CFDI / XML** | **Lector real de CFDI 4.0**: sube o arrastra tus XML y se parsean en el navegador (emisor/receptor, PUE/PPD, IVA 16/8/0/exento, retenciones, UUID) + simulador del robot de descarga y monitor de riesgos (EFOS 69-B, duplicados, PPD sin REP, cancelados) |
+| **CFDI / XML** | **Lector real de CFDI 4.0**: sube o arrastra tus XML y se parsean en el navegador (emisor/receptor, PUE/PPD, IVA 16/8/0/exento, retenciones, UUID) + **validación de REP** (cruza las PPD contra sus complementos de pago) + simulador del robot de descarga y monitor de riesgos (EFOS 69-B, duplicados, cancelados) |
 | **DIOT** | **Cuadre real**: agrupa los gastos por proveedor, suma bases de IVA por tasa (16/8/0/exento), IVA acreditable y retenciones; aparta los PPD; y genera el **.txt de carga batch** (54 campos, layout a cotejar contra el SAT) |
 | **Calendario fiscal** | Generado por reglas: día 17 → día hábil, DIOT fin de mes, anuales, PTU, multa de buzón 2027 |
 | **Cobranza** | Aging de igualas, recordatorio automático estilo WhatsApp y suspensión de portal |
@@ -109,7 +109,14 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
   columnas debe cotejarse contra el instructivo oficial** del SAT; el mapeo está
   centralizado en la constante `COL` de `diot.js` para ajustarlo en un solo lugar.
 - Los gastos **PPD** se reportan aparte: solo entran a la DIOT del mes en que se
-  pagan (cuando tengan su REP — el siguiente paso del roadmap).
+  pagan (cuando tengan su REP — ver el validador de REP).
+
+### Validador de REP (`assets/js/rep.js`)
+- Cruza las facturas **PPD** contra los **complementos de pago (REP)** que subas:
+  marca las **PPD sin REP** (riesgo de multa y de no poder deducir/acreditar) y,
+  para las que sí lo tienen, calcula la **cobertura de pago** (pagado, saldo y
+  parcialidades). Detecta también REP "huérfanos" (referencian una factura que
+  no está entre los XML cargados).
 
 ## Estructura
 
@@ -118,7 +125,7 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 ├── app.html                # Demo del panel
 ├── assets/
 │   ├── css/ base.css · landing.css · app.css
-│   └── js/  fiscal.js · data.js · cfdi.js · diot.js · app.js · landing.js
+│   └── js/  fiscal.js · data.js · cfdi.js · diot.js · rep.js · app.js · landing.js
 ├── docs/INVESTIGACION.md   # Investigación de mercado con fuentes
 ├── docs/ejemplos/          # XML de prueba (CFDI 4.0) para el lector
 └── README.md

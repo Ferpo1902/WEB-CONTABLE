@@ -594,6 +594,8 @@
         <p class="hint" style="margin-top:10px">¿No tienes XML a la mano? En el proyecto hay archivos de prueba en <span class="mono">docs/ejemplos/</span>.</p>
       </div>
 
+      <div id="cfdiRepResults">${state.cfdiReales.length ? htmlRep() : ''}</div>
+
       <div class="robot-panel">
         <div class="flex between wrap">
           <div>
@@ -693,6 +695,59 @@
     const okN = resultados.filter((r) => r.ok).length;
     const errN = resultados.length - okN;
     toast(`${okN} CFDI leído(s) ✅${errN ? ` · ${errN} con error` : ''}`);
+  }
+
+  /** Sección de validación de REP: cruza las facturas PPD con sus complementos. */
+  function htmlRep() {
+    const v = window.REP.validar(state.cfdiReales);
+    const R = v.resumen;
+    if (!R.totalPpd && !R.totalReps) return ''; // no hay nada que cruzar
+    const filaPpd = (f) => `
+      <tr>
+        <td class="mono"><small>${esc(f.uuid ? f.uuid.slice(0, 8) + '…' : '—')}</small></td>
+        <td><small>${esc((f.fecha || '').slice(0, 10))}</small></td>
+        <td><small>${esc(f.emisor.nombre || f.emisor.rfc || '—')}</small></td>
+        <td><small>${esc(f.receptor.nombre || f.receptor.rfc || '—')}</small></td>
+        <td class="num">${F.fmtMXN(f.total)}</td>
+      </tr>`;
+    return `
+      <div class="card card-pad" style="margin-bottom:16px">
+        <div class="flex between wrap">
+          <div>
+            <h3 class="mb0">🧾 Validación de REP (complementos de pago)</h3>
+            <small class="muted">Cruzamos tus facturas <strong>PPD</strong> contra los complementos de pago que subiste.</small>
+          </div>
+          <span class="badge ${R.sinRep ? 'badge-bad' : 'badge-ok'}">${R.sinRep ? `${R.sinRep} sin REP` : 'Todo con REP'}</span>
+        </div>
+        <div class="kpi-grid" style="margin:14px 0">
+          <div class="card kpi"><div class="kpi-label">Facturas PPD</div><div class="kpi-value">${R.totalPpd}</div><div class="kpi-foot">requieren complemento</div></div>
+          <div class="card kpi kpi-ok"><div class="kpi-label">Con REP</div><div class="kpi-value">${R.conRep}</div><div class="kpi-foot">${v.conRep.filter((c) => c.cubierta).length} cubierta(s) 100%</div></div>
+          <div class="card kpi ${R.sinRep ? 'kpi-bad' : ''}"><div class="kpi-label">Sin REP</div><div class="kpi-value">${R.sinRep}</div><div class="kpi-foot">${F.fmtMXN(R.montoSinRep)} en riesgo</div></div>
+          <div class="card kpi"><div class="kpi-label">Complementos (P)</div><div class="kpi-value">${R.totalReps}</div><div class="kpi-foot">${R.huerfanos ? `${R.huerfanos} huérfano(s)` : '0 huérfanos'}</div></div>
+        </div>
+        ${v.sinRep.length ? `
+          <div class="alert-row alert-bad"><span class="a-ico">🚨</span><span><strong>${v.sinRep.length} factura(s) PPD sin su REP.</strong> Sin el complemento de pago, el gasto no es deducible ni el IVA acreditable, y puede haber multa. Solicítalos al emisor.</span></div>
+          <div class="table-wrap" style="margin-top:10px"><table class="tbl">
+            <thead><tr><th>UUID</th><th>Fecha</th><th>Emisor</th><th>Receptor</th><th class="num">Total</th></tr></thead>
+            <tbody>${v.sinRep.map(filaPpd).join('')}</tbody>
+          </table></div>`
+          : '<div class="alert-row alert-info"><span class="a-ico">✅</span><span>Todas las facturas PPD cargadas tienen su complemento de pago.</span></div>'}
+        ${v.conRep.length ? `
+          <h4 style="margin:16px 0 6px">PPD con REP</h4>
+          <div class="table-wrap"><table class="tbl">
+            <thead><tr><th>UUID</th><th>Emisor → Receptor</th><th class="num">Total</th><th class="num">Pagado</th><th class="num">Saldo</th><th>Estado</th></tr></thead>
+            <tbody>${v.conRep.map((c) => `
+              <tr>
+                <td class="mono"><small>${esc(c.factura.uuid.slice(0, 8))}…</small></td>
+                <td><small>${esc(c.factura.emisor.nombre || c.factura.emisor.rfc)} → ${esc(c.factura.receptor.nombre || c.factura.receptor.rfc)}</small></td>
+                <td class="num">${F.fmtMXN(c.factura.total)}</td>
+                <td class="num">${F.fmtMXN(c.pagado)}</td>
+                <td class="num">${F.fmtMXN(c.saldo)}</td>
+                <td>${c.cubierta ? '<span class="badge badge-ok">Cubierta</span>' : `<span class="badge badge-warn">Parcial (${c.parcialidades})</span>`}</td>
+              </tr>`).join('')}</tbody>
+          </table></div>` : ''}
+        ${v.repsHuerfanos.length ? `<p class="hint" style="margin-top:10px">ℹ️ ${v.repsHuerfanos.length} complemento(s) de pago referencian facturas que no están entre los XML cargados (quizá están en otro lote).</p>` : ''}
+      </div>`;
   }
 
   function correrRobot() {
