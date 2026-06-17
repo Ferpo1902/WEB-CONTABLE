@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EJEMPLO FICTICIO. Gasto de REFACCIONARIA DEL NORTE (PUE) a tasa 0% de IVA
+     (p. ej. ciertos alimentos). Base 0% para la DIOT, sin IVA acreditable. -->
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd" Version="4.0" Serie="F" Folio="540" Fecha="2026-06-05T16:20:00" Sello="SELLO_DEMO==" FormaPago="03" NoCertificado="30001000000500003416" Certificado="CERT_DEMO==" SubTotal="3000.00" Moneda="MXN" Total="3000.00" TipoDeComprobante="I" Exportacion="01" MetodoPago="PUE" LugarExpedicion="64500">
+  <cfdi:Emisor Rfc="AVA180405J28" Nombre="ALIMENTOS DEL VALLE" RegimenFiscal="601"/>
+  <cfdi:Receptor Rfc="RNO180510AB2" Nombre="REFACCIONARIA DEL NORTE" DomicilioFiscalReceptor="64500" RegimenFiscalReceptor="601" UsoCFDI="G03"/>
+  <cfdi:Conceptos>
+    <cfdi:Concepto ClaveProdServ="50191500" Cantidad="1" ClaveUnidad="H87" Descripcion="Despensa para comedor de empleados" ValorUnitario="3000.00" Importe="3000.00" ObjetoImp="02">
+      <cfdi:Impuestos>
+        <cfdi:Traslados>
+          <cfdi:Traslado Base="3000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.000000" Importe="0.00"/>
+        </cfdi:Traslados>
+      </cfdi:Impuestos>
+    </cfdi:Concepto>
+  </cfdi:Conceptos>
+  <cfdi:Impuestos TotalImpuestosTrasladados="0.00">
+    <cfdi:Traslados>
+      <cfdi:Traslado Base="3000.00" Impuesto="002" TipoFactor="Tasa" TasaOCuota="0.000000" Importe="0.00"/>
+    </cfdi:Traslados>
+  </cfdi:Impuestos>
+  <cfdi:Complemento>
+    <tfd:TimbreFiscalDigital xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital" Version="1.1" UUID="A7B8C9D0-7777-40A1-C253-000000000540" FechaTimbrado="2026-06-05T16:20:10" RfcProvCertif="SAT970701NN3" SelloCFD="SELLO_DEMO==" NoCertificadoSAT="30001000000500003456" SelloSAT="SELLO_SAT_DEMO=="/>
+  </cfdi:Complemento>
+</cfdi:Comprobante>

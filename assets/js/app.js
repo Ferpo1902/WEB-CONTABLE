@@ -34,6 +34,7 @@
     calcClienteId: '',
     robotCorriendo: false,
     cfdiReales: [], // CFDI subidos por el usuario y parseados (solo en memoria).
+    diotRfc: '',    // RFC del contribuyente elegido para la DIOT.
   };
   const hechos = new Set(leerLS(LS.hechos, []));
   const calcStore = leerLS(LS.calc, {});
@@ -66,6 +67,19 @@
     );
   const norm = (s) =>
     String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  /** Descarga un archivo generado en el navegador (Blob), sin servidor. */
+  function descargarArchivo(nombre, contenido, mime = 'text/plain;charset=utf-8') {
+    const blob = new Blob([contenido], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 
   function toast(msg, tipo = 'ok', accion = null) {
     // Máximo 3 avisos apilados: el más viejo cede su lugar.
@@ -725,6 +739,96 @@
   }
 
   /* ======================================================================
+   * VISTA: DIOT (cuadre + generación del .txt)
+   * ==================================================================== */
+  function vDiot() {
+    const contribs = window.DIOT.detectarContribuyentes(state.cfdiReales);
+
+    if (!contribs.length) {
+      return `
+        <h1 class="view-title">DIOT</h1>
+        <p class="view-sub">Declaración Informativa de Operaciones con Terceros: el IVA acreditable de tus gastos, agrupado por proveedor y listo para el SAT.</p>
+        <div class="card card-pad center" style="padding:42px 20px">
+          <div style="font-size:2.4rem">📤</div>
+          <h3 class="mb0">Aún no hay CFDI de gastos cargados</h3>
+          <p class="muted" style="max-width:460px;margin:8px auto 16px">La DIOT se arma con tus <strong>facturas recibidas</strong> (gastos). Súbelas en la pestaña CFDI y aquí aparece el cuadre automáticamente.</p>
+          <button class="btn btn-primary" data-goto="cfdi">Ir a subir XML →</button>
+        </div>`;
+    }
+
+    // Asegura un contribuyente válido seleccionado.
+    if (!state.diotRfc || !contribs.some((c) => c.rfc === state.diotRfc)) {
+      state.diotRfc = contribs[0].rfc;
+    }
+    const r = window.DIOT.agruparPorProveedor(state.cfdiReales, state.diotRfc);
+    const T = r.totales;
+
+    return `
+      <div class="flex between wrap">
+        <div>
+          <h1 class="view-title">DIOT</h1>
+          <p class="view-sub">Cuadre del IVA acreditable por proveedor — periodo detectado: <strong>${esc(r.periodo.label)}</strong>. Revisa y descarga el .txt de carga batch.</p>
+        </div>
+        <div class="flex">
+          <button class="btn btn-ghost btn-sm" id="btnDiotCopiar">Copiar .txt</button>
+          <button class="btn btn-primary btn-sm" id="btnDiotTxt">⬇ Descargar .txt DIOT</button>
+        </div>
+      </div>
+
+      <div class="card card-pad" style="margin-bottom:14px">
+        <label class="field" style="margin:0;max-width:520px"><span class="lbl">Contribuyente (RFC receptor de los gastos)</span>
+          <select class="input" id="diotContribuyente">
+            ${contribs.map((c) => `<option value="${esc(c.rfc)}" ${c.rfc === state.diotRfc ? 'selected' : ''}>${esc(c.nombre)} · ${esc(c.rfc)} (${c.gastos} gasto${c.gastos === 1 ? '' : 's'})</option>`).join('')}
+          </select>
+        </label>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="card kpi"><div class="kpi-label">Proveedores</div><div class="kpi-value">${T.numProveedores}</div><div class="kpi-foot">${T.numCfdi} CFDI de gasto (PUE)</div></div>
+        <div class="card kpi"><div class="kpi-label">Base gravable total</div><div class="kpi-value" style="font-size:1.15rem">${F.fmtMXN(T.baseTotal)}</div><div class="kpi-foot">16/8/0/exento</div></div>
+        <div class="card kpi kpi-ok"><div class="kpi-label">IVA acreditable</div><div class="kpi-value">${F.fmtMXN(T.ivaAcreditable)}</div><div class="kpi-foot">16%: ${F.fmtMXN(T.iva16)} · 8%: ${F.fmtMXN(T.iva8)}</div></div>
+        <div class="card kpi"><div class="kpi-label">IVA retenido</div><div class="kpi-value" style="font-size:1.15rem">${F.fmtMXN(T.retIva)}</div><div class="kpi-foot">ISR ret.: ${F.fmtMXN(T.retIsr)}</div></div>
+      </div>
+
+      ${r.alertas.length ? `<div class="card card-pad" style="margin-bottom:14px">
+        ${r.alertas.map((a) => `<div class="alert-row alert-warn"><span class="a-ico">⚠️</span><span>${esc(a)}</span></div>`).join('')}
+      </div>` : ''}
+
+      <div class="card table-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>Proveedor</th><th><span class="term" tabindex="0" data-tip="04 = nacional, 05 = extranjero, 15 = global (público en general)">Tipo</span></th>
+            <th class="num">Base 16%</th><th class="num">IVA 16%</th>
+            <th class="num">Base 8%</th><th class="num">IVA 8%</th>
+            <th class="num">Base 0%</th><th class="num">Exento</th><th class="num">IVA ret.</th>
+          </tr></thead>
+          <tbody>
+            ${r.proveedores.map((p) => `
+              <tr>
+                <td><div class="strong">${esc(p.nombre)}</div><small class="mono">${esc(p.rfc)}</small></td>
+                <td><span class="badge badge-muted">${esc(p.tipoTerceroLabel)}</span></td>
+                <td class="num">${p.base16 ? F.fmtMXN(p.base16) : '—'}</td>
+                <td class="num">${p.iva16 ? F.fmtMXN(p.iva16) : '—'}</td>
+                <td class="num">${p.base8 ? F.fmtMXN(p.base8) : '—'}</td>
+                <td class="num">${p.iva8 ? F.fmtMXN(p.iva8) : '—'}</td>
+                <td class="num">${p.base0 ? F.fmtMXN(p.base0) : '—'}</td>
+                <td class="num">${p.baseExento ? F.fmtMXN(p.baseExento) : '—'}</td>
+                <td class="num">${p.retIva ? F.fmtMXN(p.retIva) : '—'}</td>
+              </tr>`).join('') || '<tr><td colspan="9" class="center muted" style="padding:24px">Sin gastos PUE para este contribuyente.</td></tr>'}
+          </tbody>
+          ${r.proveedores.length ? `<tfoot><tr class="strong">
+            <td colspan="2">Totales</td>
+            <td class="num">${F.fmtMXN(T.base16)}</td><td class="num">${F.fmtMXN(T.iva16)}</td>
+            <td class="num">${F.fmtMXN(T.base8)}</td><td class="num">${F.fmtMXN(T.iva8)}</td>
+            <td class="num">${F.fmtMXN(T.base0)}</td><td class="num">${F.fmtMXN(T.baseExento)}</td><td class="num">${F.fmtMXN(T.retIva)}</td>
+          </tr></tfoot>` : ''}
+        </table>
+      </div>
+
+      <div class="alert-row alert-info" style="margin-top:14px"><span class="a-ico">📋</span><span>El archivo .txt usa el formato nuevo del SAT (54 campos separados por «|», UTF-8, montos sin decimales). El <strong>orden exacto de las columnas debe cotejarse contra el instructivo oficial</strong> del SAT antes de presentarlo; el mapeo está centralizado en <span class="mono">diot.js</span> para ajustarlo en un solo lugar. Esta demo es informativa, no constituye asesoría fiscal.</span></div>`;
+  }
+
+  /* ======================================================================
    * VISTA: CALENDARIO
    * ==================================================================== */
   function calItem(e) {
@@ -879,6 +983,7 @@
     clientes: vClientes,
     impuestos: vImpuestos,
     cfdi: vCfdi,
+    diot: vDiot,
     calendario: vCalendario,
     cobranza: vCobranza,
     portal: vPortal,
@@ -931,6 +1036,22 @@
         state.cfdiReales = [];
         render();
         toast('Lista de XML vaciada.');
+      });
+    }
+    if (state.view === 'diot') {
+      const generarResumen = () => window.DIOT.agruparPorProveedor(state.cfdiReales, state.diotRfc);
+      $('#btnDiotTxt')?.addEventListener('click', () => {
+        const r = generarResumen();
+        if (!r.proveedores.length) { toast('No hay proveedores que exportar para este contribuyente.', 'warn'); return; }
+        descargarArchivo(window.DIOT.nombreArchivo(r), window.DIOT.generarTxt(r));
+        toast(`DIOT generada: ${r.proveedores.length} proveedor(es) · ${r.periodo.label}. ✅`);
+      });
+      $('#btnDiotCopiar')?.addEventListener('click', () => {
+        const r = generarResumen();
+        navigator.clipboard?.writeText(window.DIOT.generarTxt(r)).then(
+          () => toast('Contenido del .txt copiado al portapapeles ✅'),
+          () => toast('No se pudo copiar en este navegador', 'warn')
+        );
       });
     }
     if (state.view === 'portal') {
@@ -1043,7 +1164,7 @@
     }
     const vistas = [
       ['◳', 'Resumen', 'resumen'], ['👥', 'Clientes', 'clientes'], ['🧮', 'Impuestos 2026', 'impuestos'],
-      ['⬇️', 'CFDI / XML', 'cfdi'], ['📅', 'Calendario fiscal', 'calendario'],
+      ['⬇️', 'CFDI / XML', 'cfdi'], ['📤', 'DIOT', 'diot'], ['📅', 'Calendario fiscal', 'calendario'],
       ['💸', 'Cobranza', 'cobranza'], ['🤝', 'Portal del cliente', 'portal'],
     ];
     for (const [ico, titulo, view] of vistas) {
@@ -1052,6 +1173,7 @@
     items.push(
       { ico: '➕', titulo: 'Nuevo cliente', sub: 'Dar de alta un contribuyente', kind: 'Acción', claves: 'nuevo cliente alta agregar registrar', run: () => { state.view = 'clientes'; render(); abrirModalCliente(); } },
       { ico: '🤖', titulo: 'Simular descarga de XML', sub: 'Corre el robot del SAT ahora', kind: 'Acción', claves: 'robot descarga xml sat simular corrida', run: () => { state.view = 'cfdi'; render(); correrRobot(); } },
+      { ico: '📤', titulo: 'Generar DIOT', sub: 'Cuadre del IVA por proveedor y .txt', kind: 'Acción', claves: 'diot generar declaracion informativa operaciones terceros iva acreditable txt', run: () => { state.view = 'diot'; render(); } },
       { ico: '🧮', titulo: 'Calcular RESICO', sub: 'Persona física, tasa directa', kind: 'Acción', claves: 'calcular resico isr', run: () => { state.calcTab = 'resico'; state.view = 'impuestos'; render(); } },
       { ico: '🧮', titulo: 'Calcular IVA del mes', sub: 'Trasladado vs. acreditable', kind: 'Acción', claves: 'calcular iva mensual', run: () => { state.calcTab = 'iva'; state.view = 'impuestos'; render(); } },
       { ico: '🧮', titulo: 'Calcular ISR actividad empresarial', sub: 'Pagos provisionales acumulados', kind: 'Acción', claves: 'calcular isr actividad empresarial profesional honorarios', run: () => { state.calcTab = 'actividad'; state.view = 'impuestos'; render(); } },
@@ -1358,6 +1480,10 @@
       }
       render();
       if (c) toast(`Calculando para ${c.nombre.split(',')[0]} — régimen ${c.regimen}.`);
+    }
+    if (e.target.id === 'diotContribuyente') {
+      state.diotRfc = e.target.value;
+      render();
     }
   });
 
