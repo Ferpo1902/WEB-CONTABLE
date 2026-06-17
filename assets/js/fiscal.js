@@ -44,6 +44,14 @@
   const RET_ISR_RESICO_PM = 0.0125;     // 1.25% PM que paga a PF RESICO
   const ISR_PM_TASA = 0.30;             // Régimen general personas morales
 
+  // Subsidio para el empleo 2026 (DOF 31-dic-2025): cuota mensual FIJA que se
+  // resta al ISR cuando el ingreso gravado del mes no excede el tope. Equivale
+  // al 15.02 % de la UMA mensual. ⚠️ Cotejar contra el DOF antes de producción.
+  const SUBSIDIO_EMPLEO_MENSUAL_2026 = 536.22;   // feb–dic 2026 (enero: 536.21)
+  const SUBSIDIO_EMPLEO_TOPE_INGRESO = 11492.66; // ingreso gravable mensual máx.
+  // Permanencia en RESICO PF: el tope es ANUAL, no mensual (Art. 113-E LISR).
+  const TOPE_RESICO_ANUAL = 3500000;
+
   const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
   const fmtMXN = (n) =>
@@ -103,13 +111,24 @@
   }
 
   /** RESICO PF mensual (Art. 113-E): tasa directa sobre ingresos cobrados. */
-  function calcularResicoPF({ ingresosMes = 0, retencionPM = 0 }) {
-    const fueraDeRango = ingresosMes > 291666.67;
+  function calcularResicoPF({ ingresosMes = 0, retencionPM = 0, ingresosAnualAcum = 0 }) {
     const renglon =
       RESICO_PF_MENSUAL.find((r) => ingresosMes <= r.hasta) ||
       RESICO_PF_MENSUAL[RESICO_PF_MENSUAL.length - 1];
     const isr = round2(ingresosMes * renglon.tasa);
     const aCargo = Math.max(0, round2(isr - retencionPM));
+
+    // El tope de permanencia es ANUAL ($3.5M). Si se captura el acumulado del
+    // año, se valida de verdad; si no, se proyecta el mensual como señal.
+    const fueraDeRango = ingresosAnualAcum > TOPE_RESICO_ANUAL;
+    const proyeccionAnual = round2(ingresosMes * 12);
+    let alerta = null;
+    if (fueraDeRango) {
+      alerta = `Los ingresos acumulados del año (${fmtMXN(ingresosAnualAcum)}) superan ${fmtMXN(TOPE_RESICO_ANUAL)}: el contribuyente sale de RESICO (Art. 113-E).`;
+    } else if (!ingresosAnualAcum && proyeccionAnual > TOPE_RESICO_ANUAL) {
+      alerta = `A este ritmo, la proyección anual (${fmtMXN(proyeccionAnual)}) supera ${fmtMXN(TOPE_RESICO_ANUAL)}: vigila el tope de permanencia en RESICO.`;
+    }
+
     return {
       regimen: 'RESICO Persona Física',
       tasa: renglon.tasa,
@@ -123,9 +142,7 @@
         ['(−) Retención 1.25% por personas morales', fmtMXN(retencionPM)],
         ['(=) ISR a cargo del mes', fmtMXN(aCargo)],
       ],
-      alerta: fueraDeRango
-        ? 'Los ingresos exceden el equivalente mensual del tope de $3,500,000 anuales: riesgo de salida de RESICO.'
-        : null,
+      alerta,
     };
   }
 
@@ -158,22 +175,34 @@
     };
   }
 
-  /** ISR mensual por sueldos (tarifa Art. 96; no incluye subsidio al empleo). */
+  /** ISR mensual por sueldos (tarifa Art. 96) con subsidio para el empleo 2026. */
   function calcularSueldos({ sueldoMensualGravado = 0 }) {
     const t = aplicarTarifa(sueldoMensualGravado);
+    const aplicaSubsidio =
+      sueldoMensualGravado > 0 && sueldoMensualGravado <= SUBSIDIO_EMPLEO_TOPE_INGRESO;
+    const subsidio = aplicaSubsidio ? SUBSIDIO_EMPLEO_MENSUAL_2026 : 0;
+    const isrARetener = Math.max(0, round2(t.isr - subsidio));
     return {
       regimen: 'Sueldos y salarios (retención mensual)',
       ...t,
+      subsidio,
+      isrARetener,
+      aCargo: isrARetener, // el resultado final es el ISR a retener
       pasos: [
         ['Ingreso mensual gravado', fmtMXN(sueldoMensualGravado)],
         ['(−) Límite inferior', fmtMXN(t.renglon.li)],
         ['(=) Excedente', fmtMXN(t.excedente)],
         [`(×) Tasa (${fmtPct(t.renglon.pct)})`, fmtMXN(t.marginal)],
         ['(+) Cuota fija', fmtMXN(t.renglon.cf)],
-        ['(=) ISR a retener (antes de subsidio al empleo)', fmtMXN(t.isr)],
+        ['(=) ISR causado', fmtMXN(t.isr)],
+        ['(−) Subsidio para el empleo', fmtMXN(subsidio)],
+        ['(=) ISR a retener', fmtMXN(isrARetener)],
       ],
-      alerta:
-        'No incluye subsidio al empleo (decreto vigente): verificar procedencia para ingresos bajos.',
+      alerta: !aplicaSubsidio
+        ? `Ingreso superior a ${fmtMXN(SUBSIDIO_EMPLEO_TOPE_INGRESO)}: no aplica subsidio para el empleo (decreto DOF 31-dic-2025).`
+        : (subsidio > t.isr
+            ? 'El subsidio para el empleo supera al ISR causado; conforme al decreto, la diferencia no se entrega en efectivo al trabajador.'
+            : null),
     };
   }
 
@@ -367,6 +396,9 @@
     RET_IVA_DOS_TERCIOS,
     RET_ISR_HONORARIOS,
     RET_ISR_RESICO_PM,
+    SUBSIDIO_EMPLEO_MENSUAL_2026,
+    SUBSIDIO_EMPLEO_TOPE_INGRESO,
+    TOPE_RESICO_ANUAL,
     aplicarTarifa,
     calcularActividadEmpresarial,
     calcularResicoPF,

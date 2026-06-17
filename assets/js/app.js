@@ -410,7 +410,9 @@
           <input class="input calc-in" type="number" id="inIngresos" value="48000" min="0" step="500" /></label>
         <label class="field"><span class="lbl">Retención 1.25% por personas morales (si aplica)</span>
           <input class="input calc-in" type="number" id="inRetencion" value="0" min="0" step="50" /></label>
-        <p class="hint">El impuesto se calcula por tasa directa sobre lo cobrado, sin deducciones.</p>`,
+        <label class="field"><span class="lbl">Ingresos acumulados del año <small class="muted">(opcional, valida el tope de $3.5M)</small></span>
+          <input class="input calc-in" type="number" id="inIngresosAnual" value="0" min="0" step="1000" /></label>
+        <p class="hint">El impuesto se calcula por tasa directa sobre lo cobrado, sin deducciones. El tope de permanencia en RESICO es <strong>anual</strong> ($3.5M).</p>`,
       actividad: `
         <h3>Actividad Empresarial y Profesional <span class="badge badge-blue">Art. 106 LISR</span></h3>
         <label class="field"><span class="lbl">Ingresos acumulados del año al periodo</span>
@@ -434,8 +436,8 @@
       sueldos: `
         <h3>Sueldos y salarios — retención mensual <span class="badge badge-blue">Art. 96 LISR</span></h3>
         <label class="field"><span class="lbl">Ingreso mensual gravado</span>
-          <input class="input calc-in" type="number" id="inIngresos" value="28500" min="0" step="500" /></label>
-        <p class="hint">Cálculo antes de subsidio al empleo. La tarifa 2026 ya incluye la actualización por inflación de 13.21%.</p>`,
+          <input class="input calc-in" type="number" id="inIngresos" value="9500" min="0" step="500" /></label>
+        <p class="hint">Ya incluye el <span class="term" data-tip="Subsidio para el empleo 2026: cuota fija de $536.22/mes cuando el ingreso gravado no excede $11,492.66 (decreto DOF 31-dic-2025). Si el subsidio supera al ISR, la diferencia no se entrega en efectivo.">subsidio para el empleo</span> 2026. La tarifa ya trae la actualización por inflación de 13.21%.</p>`,
       iva: `
         <h3>IVA mensual definitivo <span class="badge badge-blue">Art. 5-D LIVA</span></h3>
         <label class="field"><span class="lbl">IVA trasladado efectivamente cobrado</span>
@@ -470,7 +472,7 @@
     let r;
     switch (state.calcTab) {
       case 'resico':
-        r = F.calcularResicoPF({ ingresosMes: num('#inIngresos'), retencionPM: num('#inRetencion') });
+        r = F.calcularResicoPF({ ingresosMes: num('#inIngresos'), retencionPM: num('#inRetencion'), ingresosAnualAcum: num('#inIngresosAnual') });
         break;
       case 'actividad':
         r = F.calcularActividadEmpresarial({

@@ -86,7 +86,11 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 - Tarifa ISR mensual 2026 (Anexo 8 RMF 2026, DOF 28-dic-2025; actualización
   por inflación 13.21%). Anclas verificadas contra fuentes públicas;
   **cotejar centavos contra el DOF antes de producción**.
-- Tablas RESICO PF (Art. 113-E), ISR PM 30%, IVA con retenciones.
+- Tablas RESICO PF (Art. 113-E) con validación del tope **anual** de $3.5M,
+  ISR PM 30%, IVA con retenciones.
+- **Subsidio para el empleo 2026** (DOF 31-dic-2025): cuota fija de $536.22/mes
+  cuando el ingreso gravado no excede $11,492.66, aplicado en el cálculo de
+  sueldos (si el subsidio supera al ISR, la diferencia no se entrega en efectivo).
 - Validador de estructura de RFC y cálculo de días extra por 6º dígito
   (Decreto de facilidades Art. 5.1).
 - Calendario 2026 generado por reglas con días inhábiles y recorrido a hábil.
