@@ -33,7 +33,14 @@
     calcTab: 'resico',
     calcClienteId: '',
     robotCorriendo: false,
+    cfdiReales: [], // CFDI subidos por el usuario y parseados (solo en memoria).
+    diotRfc: '',    // RFC del contribuyente elegido para la DIOT.
+    radarTema: 'todos',
+    radarFuente: 'todas',
+    radarBusqueda: '',
+    radarSoloNoLeidas: false,
   };
+  const R = window.Radar;
   const hechos = new Set(leerLS(LS.hechos, []));
   const calcStore = leerLS(LS.calc, {});
 
@@ -65,6 +72,19 @@
     );
   const norm = (s) =>
     String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  /** Descarga un archivo generado en el navegador (Blob), sin servidor. */
+  function descargarArchivo(nombre, contenido, mime = 'text/plain;charset=utf-8') {
+    const blob = new Blob([contenido], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 
   function toast(msg, tipo = 'ok', accion = null) {
     // Máximo 3 avisos apilados: el más viejo cede su lugar.
@@ -209,11 +229,36 @@
           </div>
         </div>
 
-        <div class="card card-pad">
-          <h3>Actividad de hoy</h3>
-          <ul class="feed">
-            ${D.ACTIVIDAD.map((a) => `<li><span class="f-hora">${a.hora}</span><span>${a.icono} ${esc(a.texto)}</span></li>`).join('')}
-          </ul>
+        <div>
+          <div class="card card-pad radar-mini">
+            <div class="flex between">
+              <h3 class="mb0">📡 Radar fiscal</h3>
+              <span class="badge badge-live"><span class="dot-live"></span> Datos reales</span>
+            </div>
+            <p class="hint" style="margin:4px 0 10px">Lo que cambió en el SAT y el DOF — cruzado con tu cartera.</p>
+            ${(() => {
+              const top = R.items.filter((n) => n.impacto === 'alto' && !R.leidas.has(n.id)).slice(0, 3);
+              if (!top.length) return '<p class="muted" style="font-size:.88rem">Sin pendientes de alto impacto. El radar sigue vigilando por ti. ✅</p>';
+              return top.map((n) => {
+                const { total, esToda } = R.clientesAfectados(n, state.clientes);
+                const alcance = total ? (esToda ? 'toda tu cartera' : `${total} cliente${total === 1 ? '' : 's'}`) : '';
+                return `
+                <button class="radar-mini-item" data-goto="radar">
+                  <span class="rmi-fecha">${R.fechaRelativa(n.fecha)}</span>
+                  <span class="rmi-titulo">${esc(n.titulo)}</span>
+                  ${alcance ? `<span class="rmi-alcance">→ afecta a ${alcance}</span>` : ''}
+                </button>`;
+              }).join('');
+            })()}
+            <div class="right" style="margin-top:8px"><button class="btn btn-ghost btn-sm" data-goto="radar">Abrir radar →</button></div>
+          </div>
+
+          <div class="card card-pad" style="margin-top:16px">
+            <h3>Actividad de hoy</h3>
+            <ul class="feed">
+              ${D.ACTIVIDAD.map((a) => `<li><span class="f-hora">${a.hora}</span><span>${a.icono} ${esc(a.texto)}</span></li>`).join('')}
+            </ul>
+          </div>
         </div>
       </div>`;
   }
@@ -395,7 +440,9 @@
           <input class="input calc-in" type="number" id="inIngresos" value="48000" min="0" step="500" /></label>
         <label class="field"><span class="lbl">Retención 1.25% por personas morales (si aplica)</span>
           <input class="input calc-in" type="number" id="inRetencion" value="0" min="0" step="50" /></label>
-        <p class="hint">El impuesto se calcula por tasa directa sobre lo cobrado, sin deducciones.</p>`,
+        <label class="field"><span class="lbl">Ingresos acumulados del año <small class="muted">(opcional, valida el tope de $3.5M)</small></span>
+          <input class="input calc-in" type="number" id="inIngresosAnual" value="0" min="0" step="1000" /></label>
+        <p class="hint">El impuesto se calcula por tasa directa sobre lo cobrado, sin deducciones. El tope de permanencia en RESICO es <strong>anual</strong> ($3.5M).</p>`,
       actividad: `
         <h3>Actividad Empresarial y Profesional <span class="badge badge-blue">Art. 106 LISR</span></h3>
         <label class="field"><span class="lbl">Ingresos acumulados del año al periodo</span>
@@ -419,8 +466,8 @@
       sueldos: `
         <h3>Sueldos y salarios — retención mensual <span class="badge badge-blue">Art. 96 LISR</span></h3>
         <label class="field"><span class="lbl">Ingreso mensual gravado</span>
-          <input class="input calc-in" type="number" id="inIngresos" value="28500" min="0" step="500" /></label>
-        <p class="hint">Cálculo antes de subsidio al empleo. La tarifa 2026 ya incluye la actualización por inflación de 13.21%.</p>`,
+          <input class="input calc-in" type="number" id="inIngresos" value="9500" min="0" step="500" /></label>
+        <p class="hint">Ya incluye el <span class="term" data-tip="Subsidio para el empleo 2026: cuota fija de $536.22/mes cuando el ingreso gravado no excede $11,492.66 (decreto DOF 31-dic-2025). Si el subsidio supera al ISR, la diferencia no se entrega en efectivo.">subsidio para el empleo</span> 2026. La tarifa ya trae la actualización por inflación de 13.21%.</p>`,
       iva: `
         <h3>IVA mensual definitivo <span class="badge badge-blue">Art. 5-D LIVA</span></h3>
         <label class="field"><span class="lbl">IVA trasladado efectivamente cobrado</span>
@@ -455,7 +502,7 @@
     let r;
     switch (state.calcTab) {
       case 'resico':
-        r = F.calcularResicoPF({ ingresosMes: num('#inIngresos'), retencionPM: num('#inRetencion') });
+        r = F.calcularResicoPF({ ingresosMes: num('#inIngresos'), retencionPM: num('#inRetencion'), ingresosAnualAcum: num('#inIngresosAnual') });
         break;
       case 'actividad':
         r = F.calcularActividadEmpresarial({
@@ -561,7 +608,25 @@
     const riesgos = D.CFDIS.filter((x) => x.riesgo);
     return `
       <h1 class="view-title">CFDI / XML</h1>
-      <p class="view-sub">El robot descarga los XML de todos tus clientes cada noche, con reintentos automáticos cuando el SAT se satura. Tú solo revisas los riesgos.</p>
+      <p class="view-sub">Sube tus XML y ContaFlow los lee al instante en tu navegador; o deja que el robot los descargue solo cada noche. Tú solo revisas los riesgos.</p>
+
+      <div class="card card-pad cfdi-upload" style="margin-bottom:16px">
+        <div class="flex between wrap">
+          <div>
+            <h3 class="mb0">📂 Sube tus XML (CFDI 4.0)</h3>
+            <small class="muted">Se procesan aquí, en tu navegador. Ningún archivo sale de tu equipo. 🔒</small>
+          </div>
+          ${state.cfdiReales.length ? `<button class="btn btn-ghost btn-sm" id="btnLimpiarCfdi">Limpiar (${state.cfdiReales.length})</button>` : ''}
+        </div>
+        <div class="upload-zone" id="cfdiDrop" style="margin-top:12px" tabindex="0" role="button" aria-label="Subir archivos XML de CFDI">
+          📎 Arrastra aquí tus XML o haz clic para elegir (puedes seleccionar varios)
+        </div>
+        <input type="file" id="cfdiFileInput" accept=".xml,text/xml,application/xml" multiple hidden />
+        <div id="cfdiRealResults">${state.cfdiReales.length ? htmlCfdiReales() : ''}</div>
+        <p class="hint" style="margin-top:10px">¿No tienes XML a la mano? En el proyecto hay archivos de prueba en <span class="mono">docs/ejemplos/</span>.</p>
+      </div>
+
+      <div id="cfdiRepResults">${state.cfdiReales.length ? htmlRep() : ''}</div>
 
       <div class="robot-panel">
         <div class="flex between wrap">
@@ -613,6 +678,110 @@
     }
   }
 
+  /** Construye el resumen + tabla de los CFDI que el usuario subió. */
+  function htmlCfdiReales() {
+    const lista = state.cfdiReales;
+    if (!lista.length) return '';
+    const R = window.CFDI.resumir(lista);
+    const validos = lista.filter((x) => x.ok);
+    const errores = lista.filter((x) => !x.ok);
+    return `
+      <div class="kpi-grid" style="margin:16px 0">
+        <div class="card kpi"><div class="kpi-label">Comprobantes leídos</div><div class="kpi-value">${R.validos}</div><div class="kpi-foot">${R.conError ? `${R.conError} con error` : 'todos válidos'}</div></div>
+        <div class="card kpi"><div class="kpi-label">Por tipo</div><div class="kpi-value" style="font-size:1.05rem">${R.ingresos}·I ${R.egresos}·E ${R.pagos}·P ${R.nomina}·N</div><div class="kpi-foot">Ingreso · Egreso · Pago · Nómina</div></div>
+        <div class="card kpi"><div class="kpi-label">IVA trasladado</div><div class="kpi-value">${F.fmtMXN(R.ivaTrasladado)}</div><div class="kpi-foot">Retenido: ${F.fmtMXN(R.retenido)}</div></div>
+        <div class="card kpi"><div class="kpi-label">Base IVA 16%</div><div class="kpi-value" style="font-size:1.05rem">${F.fmtMXN(R.baseIva16)}</div><div class="kpi-foot">8%: ${F.fmtMXN(R.baseIva8)} · 0%: ${F.fmtMXN(R.baseIva0)} · Ex: ${F.fmtMXN(R.baseExento)}</div></div>
+      </div>
+      ${errores.length ? `<div class="alert-row alert-warn"><span class="a-ico">⚠️</span><span>${errores.length} archivo(s) no se pudieron leer: ${errores.map((e) => `<strong>${esc(e.archivo)}</strong> (${esc(e.errores[0])})`).join('; ')}</span></div>` : ''}
+      <div class="card table-wrap" style="margin-top:12px">
+        <table class="tbl">
+          <thead><tr><th>UUID</th><th>Tipo</th><th>Emisor</th><th>Receptor</th><th>Método</th><th class="num">Subtotal</th><th class="num">IVA 16%</th><th class="num">Total</th></tr></thead>
+          <tbody>
+            ${validos.map((x) => `
+              <tr>
+                <td class="mono"><small>${esc(x.uuid ? x.uuid.slice(0, 8) + '…' : '— sin UUID —')}</small></td>
+                <td><span class="badge badge-muted">${esc(x.tipoLabel)}</span></td>
+                <td><small>${esc(x.emisor.nombre || x.emisor.rfc || '—')}</small></td>
+                <td><small>${esc(x.receptor.nombre || x.receptor.rfc || '—')}</small></td>
+                <td>${x.metodoPago ? `<span class="badge ${x.metodoPago === 'PPD' ? 'badge-warn' : 'badge-blue'}">${esc(x.metodoPago)}</span>` : '—'}</td>
+                <td class="num">${F.fmtMXN(x.subtotal)}</td>
+                <td class="num">${x.impuestos.iva16.importe ? F.fmtMXN(x.impuestos.iva16.importe) : '—'}</td>
+                <td class="num">${F.fmtMXN(x.total)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <p class="hint" style="margin-top:10px">Estos datos viven solo en esta sesión (no se guardan en disco). En el siguiente paso, de aquí saldrá la DIOT y el cruce de REP.</p>`;
+  }
+
+  /** Lee los XML elegidos (input o drag&drop) y los agrega al estado. */
+  async function procesarArchivosCFDI(fileList) {
+    const archivos = Array.from(fileList || []).filter(
+      (f) => /\.xml$/i.test(f.name) || (f.type || '').includes('xml')
+    );
+    if (!archivos.length) { toast('Selecciona uno o más archivos .xml', 'warn'); return; }
+    toast('Procesando XML en tu navegador…');
+    const resultados = await Promise.all(archivos.map((f) => window.CFDI.parseArchivo(f)));
+    state.cfdiReales = state.cfdiReales.concat(resultados);
+    if (state.view === 'cfdi') render();
+    const okN = resultados.filter((r) => r.ok).length;
+    const errN = resultados.length - okN;
+    toast(`${okN} CFDI leído(s) ✅${errN ? ` · ${errN} con error` : ''}`);
+  }
+
+  /** Sección de validación de REP: cruza las facturas PPD con sus complementos. */
+  function htmlRep() {
+    const v = window.REP.validar(state.cfdiReales);
+    const R = v.resumen;
+    if (!R.totalPpd && !R.totalReps) return ''; // no hay nada que cruzar
+    const filaPpd = (f) => `
+      <tr>
+        <td class="mono"><small>${esc(f.uuid ? f.uuid.slice(0, 8) + '…' : '—')}</small></td>
+        <td><small>${esc((f.fecha || '').slice(0, 10))}</small></td>
+        <td><small>${esc(f.emisor.nombre || f.emisor.rfc || '—')}</small></td>
+        <td><small>${esc(f.receptor.nombre || f.receptor.rfc || '—')}</small></td>
+        <td class="num">${F.fmtMXN(f.total)}</td>
+      </tr>`;
+    return `
+      <div class="card card-pad" style="margin-bottom:16px">
+        <div class="flex between wrap">
+          <div>
+            <h3 class="mb0">🧾 Validación de REP (complementos de pago)</h3>
+            <small class="muted">Cruzamos tus facturas <strong>PPD</strong> contra los complementos de pago que subiste.</small>
+          </div>
+          <span class="badge ${R.sinRep ? 'badge-bad' : 'badge-ok'}">${R.sinRep ? `${R.sinRep} sin REP` : 'Todo con REP'}</span>
+        </div>
+        <div class="kpi-grid" style="margin:14px 0">
+          <div class="card kpi"><div class="kpi-label">Facturas PPD</div><div class="kpi-value">${R.totalPpd}</div><div class="kpi-foot">requieren complemento</div></div>
+          <div class="card kpi kpi-ok"><div class="kpi-label">Con REP</div><div class="kpi-value">${R.conRep}</div><div class="kpi-foot">${v.conRep.filter((c) => c.cubierta).length} cubierta(s) 100%</div></div>
+          <div class="card kpi ${R.sinRep ? 'kpi-bad' : ''}"><div class="kpi-label">Sin REP</div><div class="kpi-value">${R.sinRep}</div><div class="kpi-foot">${F.fmtMXN(R.montoSinRep)} en riesgo</div></div>
+          <div class="card kpi"><div class="kpi-label">Complementos (P)</div><div class="kpi-value">${R.totalReps}</div><div class="kpi-foot">${R.huerfanos ? `${R.huerfanos} huérfano(s)` : '0 huérfanos'}</div></div>
+        </div>
+        ${v.sinRep.length ? `
+          <div class="alert-row alert-bad"><span class="a-ico">🚨</span><span><strong>${v.sinRep.length} factura(s) PPD sin su REP.</strong> Sin el complemento de pago, el gasto no es deducible ni el IVA acreditable, y puede haber multa. Solicítalos al emisor.</span></div>
+          <div class="table-wrap" style="margin-top:10px"><table class="tbl">
+            <thead><tr><th>UUID</th><th>Fecha</th><th>Emisor</th><th>Receptor</th><th class="num">Total</th></tr></thead>
+            <tbody>${v.sinRep.map(filaPpd).join('')}</tbody>
+          </table></div>`
+          : '<div class="alert-row alert-info"><span class="a-ico">✅</span><span>Todas las facturas PPD cargadas tienen su complemento de pago.</span></div>'}
+        ${v.conRep.length ? `
+          <h4 style="margin:16px 0 6px">PPD con REP</h4>
+          <div class="table-wrap"><table class="tbl">
+            <thead><tr><th>UUID</th><th>Emisor → Receptor</th><th class="num">Total</th><th class="num">Pagado</th><th class="num">Saldo</th><th>Estado</th></tr></thead>
+            <tbody>${v.conRep.map((c) => `
+              <tr>
+                <td class="mono"><small>${esc(c.factura.uuid.slice(0, 8))}…</small></td>
+                <td><small>${esc(c.factura.emisor.nombre || c.factura.emisor.rfc)} → ${esc(c.factura.receptor.nombre || c.factura.receptor.rfc)}</small></td>
+                <td class="num">${F.fmtMXN(c.factura.total)}</td>
+                <td class="num">${F.fmtMXN(c.pagado)}</td>
+                <td class="num">${F.fmtMXN(c.saldo)}</td>
+                <td>${c.cubierta ? '<span class="badge badge-ok">Cubierta</span>' : `<span class="badge badge-warn">Parcial (${c.parcialidades})</span>`}</td>
+              </tr>`).join('')}</tbody>
+          </table></div>` : ''}
+        ${v.repsHuerfanos.length ? `<p class="hint" style="margin-top:10px">ℹ️ ${v.repsHuerfanos.length} complemento(s) de pago referencian facturas que no están entre los XML cargados (quizá están en otro lote).</p>` : ''}
+      </div>`;
+  }
+
   function correrRobot() {
     if (state.robotCorriendo || !$('#robotBar')) return;
     state.robotCorriendo = true;
@@ -654,6 +823,96 @@
       }
     }, 90);
     st.textContent = 'Corriendo…';
+  }
+
+  /* ======================================================================
+   * VISTA: DIOT (cuadre + generación del .txt)
+   * ==================================================================== */
+  function vDiot() {
+    const contribs = window.DIOT.detectarContribuyentes(state.cfdiReales);
+
+    if (!contribs.length) {
+      return `
+        <h1 class="view-title">DIOT</h1>
+        <p class="view-sub">Declaración Informativa de Operaciones con Terceros: el IVA acreditable de tus gastos, agrupado por proveedor y listo para el SAT.</p>
+        <div class="card card-pad center" style="padding:42px 20px">
+          <div style="font-size:2.4rem">📤</div>
+          <h3 class="mb0">Aún no hay CFDI de gastos cargados</h3>
+          <p class="muted" style="max-width:460px;margin:8px auto 16px">La DIOT se arma con tus <strong>facturas recibidas</strong> (gastos). Súbelas en la pestaña CFDI y aquí aparece el cuadre automáticamente.</p>
+          <button class="btn btn-primary" data-goto="cfdi">Ir a subir XML →</button>
+        </div>`;
+    }
+
+    // Asegura un contribuyente válido seleccionado.
+    if (!state.diotRfc || !contribs.some((c) => c.rfc === state.diotRfc)) {
+      state.diotRfc = contribs[0].rfc;
+    }
+    const r = window.DIOT.agruparPorProveedor(state.cfdiReales, state.diotRfc);
+    const T = r.totales;
+
+    return `
+      <div class="flex between wrap">
+        <div>
+          <h1 class="view-title">DIOT</h1>
+          <p class="view-sub">Cuadre del IVA acreditable por proveedor — periodo detectado: <strong>${esc(r.periodo.label)}</strong>. Revisa y descarga el .txt de carga batch.</p>
+        </div>
+        <div class="flex">
+          <button class="btn btn-ghost btn-sm" id="btnDiotCopiar">Copiar .txt</button>
+          <button class="btn btn-primary btn-sm" id="btnDiotTxt">⬇ Descargar .txt DIOT</button>
+        </div>
+      </div>
+
+      <div class="card card-pad" style="margin-bottom:14px">
+        <label class="field" style="margin:0;max-width:520px"><span class="lbl">Contribuyente (RFC receptor de los gastos)</span>
+          <select class="input" id="diotContribuyente">
+            ${contribs.map((c) => `<option value="${esc(c.rfc)}" ${c.rfc === state.diotRfc ? 'selected' : ''}>${esc(c.nombre)} · ${esc(c.rfc)} (${c.gastos} gasto${c.gastos === 1 ? '' : 's'})</option>`).join('')}
+          </select>
+        </label>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="card kpi"><div class="kpi-label">Proveedores</div><div class="kpi-value">${T.numProveedores}</div><div class="kpi-foot">${T.numCfdi} CFDI de gasto (PUE)</div></div>
+        <div class="card kpi"><div class="kpi-label">Base gravable total</div><div class="kpi-value" style="font-size:1.15rem">${F.fmtMXN(T.baseTotal)}</div><div class="kpi-foot">16/8/0/exento</div></div>
+        <div class="card kpi kpi-ok"><div class="kpi-label">IVA acreditable</div><div class="kpi-value">${F.fmtMXN(T.ivaAcreditable)}</div><div class="kpi-foot">16%: ${F.fmtMXN(T.iva16)} · 8%: ${F.fmtMXN(T.iva8)}</div></div>
+        <div class="card kpi"><div class="kpi-label">IVA retenido</div><div class="kpi-value" style="font-size:1.15rem">${F.fmtMXN(T.retIva)}</div><div class="kpi-foot">ISR ret.: ${F.fmtMXN(T.retIsr)}</div></div>
+      </div>
+
+      ${r.alertas.length ? `<div class="card card-pad" style="margin-bottom:14px">
+        ${r.alertas.map((a) => `<div class="alert-row alert-warn"><span class="a-ico">⚠️</span><span>${esc(a)}</span></div>`).join('')}
+      </div>` : ''}
+
+      <div class="card table-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>Proveedor</th><th><span class="term" tabindex="0" data-tip="04 = nacional, 05 = extranjero, 15 = global (público en general)">Tipo</span></th>
+            <th class="num">Base 16%</th><th class="num">IVA 16%</th>
+            <th class="num">Base 8%</th><th class="num">IVA 8%</th>
+            <th class="num">Base 0%</th><th class="num">Exento</th><th class="num">IVA ret.</th>
+          </tr></thead>
+          <tbody>
+            ${r.proveedores.map((p) => `
+              <tr>
+                <td><div class="strong">${esc(p.nombre)}</div><small class="mono">${esc(p.rfc)}</small></td>
+                <td><span class="badge badge-muted">${esc(p.tipoTerceroLabel)}</span></td>
+                <td class="num">${p.base16 ? F.fmtMXN(p.base16) : '—'}</td>
+                <td class="num">${p.iva16 ? F.fmtMXN(p.iva16) : '—'}</td>
+                <td class="num">${p.base8 ? F.fmtMXN(p.base8) : '—'}</td>
+                <td class="num">${p.iva8 ? F.fmtMXN(p.iva8) : '—'}</td>
+                <td class="num">${p.base0 ? F.fmtMXN(p.base0) : '—'}</td>
+                <td class="num">${p.baseExento ? F.fmtMXN(p.baseExento) : '—'}</td>
+                <td class="num">${p.retIva ? F.fmtMXN(p.retIva) : '—'}</td>
+              </tr>`).join('') || '<tr><td colspan="9" class="center muted" style="padding:24px">Sin gastos PUE para este contribuyente.</td></tr>'}
+          </tbody>
+          ${r.proveedores.length ? `<tfoot><tr class="strong">
+            <td colspan="2">Totales</td>
+            <td class="num">${F.fmtMXN(T.base16)}</td><td class="num">${F.fmtMXN(T.iva16)}</td>
+            <td class="num">${F.fmtMXN(T.base8)}</td><td class="num">${F.fmtMXN(T.iva8)}</td>
+            <td class="num">${F.fmtMXN(T.base0)}</td><td class="num">${F.fmtMXN(T.baseExento)}</td><td class="num">${F.fmtMXN(T.retIva)}</td>
+          </tr></tfoot>` : ''}
+        </table>
+      </div>
+
+      <div class="alert-row alert-info" style="margin-top:14px"><span class="a-ico">📋</span><span>El archivo .txt usa el formato nuevo del SAT (54 campos separados por «|», UTF-8, montos sin decimales). El <strong>orden exacto de las columnas debe cotejarse contra el instructivo oficial</strong> del SAT antes de presentarlo; el mapeo está centralizado en <span class="mono">diot.js</span> para ajustarlo en un solo lugar. Esta demo es informativa, no constituye asesoría fiscal.</span></div>`;
   }
 
   /* ======================================================================
@@ -804,6 +1063,165 @@
   }
 
   /* ======================================================================
+   * VISTA: RADAR FISCAL
+   * La única vista de la demo con DATOS REALES: noticias del SAT, DOF y
+   * prensa fiscal, clasificadas por tema y cruzadas con la cartera.
+   * ==================================================================== */
+  function radarFiltrados() {
+    let lista = R.items;
+    if (state.radarTema !== 'todos') lista = lista.filter((n) => (n.temas || []).includes(state.radarTema));
+    if (state.radarFuente !== 'todas') lista = lista.filter((n) => n.fuente === state.radarFuente);
+    if (state.radarSoloNoLeidas) lista = lista.filter((n) => !R.leidas.has(n.id));
+    const q = norm(state.radarBusqueda.trim());
+    if (q) lista = lista.filter((n) => norm(`${n.titulo} ${n.resumen || ''}`).includes(q));
+    return lista;
+  }
+
+  function radarAfectadosHTML(n) {
+    const { clientes, total, esToda, urgentes } = R.clientesAfectados(n, state.clientes);
+    if (!total) return { boton: '', panel: '' };
+    const texto = esToda
+      ? `Aplica a toda tu cartera (${total})`
+      : `Afecta a ${total} de tus clientes`;
+    const urgente = urgentes.length
+      ? `<span class="radar-urgente">🚨 ${urgentes.length} ya con bandera 69-B</span>`
+      : '';
+    const boton = `
+      <button class="radar-af-btn ${urgentes.length ? 'peligro' : ''}" data-radar-afectados="${n.id}" aria-expanded="false" aria-controls="af-${n.id}">
+        ${urgentes.length ? '🚨' : '👥'} ${texto} ${urgente}
+      </button>`;
+    const panel = `
+      <div class="radar-afectados" id="af-${n.id}" hidden>
+        ${clientes.map((c) => `
+          <button class="radar-af-chip ${c.riesgo69b && (n.temas || []).includes('69b') ? 'chip-peligro' : ''}" data-goto="clientes" data-cli="${c.id}" title="Abrir expediente">
+            ${c.riesgo69b ? '🚨 ' : ''}${esc(c.nombre.split(',')[0])} <small>${esc(c.regimen)}</small>
+          </button>`).join('')}
+        <small class="hint w100">Clic en un cliente para abrir su expediente y actuar de una vez.</small>
+      </div>`;
+    return { boton, panel };
+  }
+
+  function radarCard(n, destacada = false) {
+    const leida = R.leidas.has(n.id);
+    const { boton, panel } = radarAfectadosHTML(n);
+    const chips = (n.temas || [])
+      .filter((t) => R.TEMAS[t])
+      .map((t) => `<button class="radar-tema-chip" data-radar-tema="${t}">${R.TEMAS[t].label}</button>`)
+      .join('');
+    const impLabel = { alto: '⚠ Alto impacto', medio: 'Relevante', info: 'Contexto' }[n.impacto] || '';
+    return `
+      <article class="radar-card imp-${n.impacto} ${leida ? 'leida' : ''} ${destacada ? 'destacada' : ''}" data-radar-id="${n.id}">
+        <div class="radar-top">
+          <span class="radar-fuente">${esc(n.fuente)}</span>
+          <span class="radar-fecha">${R.fechaRelativa(n.fecha)}</span>
+          <span class="imp-badge imp-badge-${n.impacto}">${impLabel}</span>
+          <button class="radar-leida-btn" data-radar-leida="${n.id}" title="${leida ? 'Marcar como no leída' : 'Marcar como leída'}" aria-label="${leida ? 'Marcar como no leída' : 'Marcar como leída'}">${leida ? '↩' : '✓'}</button>
+        </div>
+        <h3 class="radar-titulo"><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${esc(n.titulo)}<span class="ext" aria-hidden="true"> ↗</span></a></h3>
+        ${n.resumen ? `<p class="radar-resumen">${esc(n.resumen)}</p>` : ''}
+        <div class="radar-pie">${chips}${boton}</div>
+        ${panel}
+      </article>`;
+  }
+
+  function radarListaHTML() {
+    const lista = radarFiltrados();
+    const hero = lista.filter((n) => n.impacto === 'alto' && !R.leidas.has(n.id)).slice(0, 3);
+    const heroIds = new Set(hero.map((n) => n.id));
+    const resto = lista.filter((n) => !heroIds.has(n.id));
+    const vacio = `
+      <div class="card card-pad center radar-vacio">
+        <p class="strong mb0">Nada por aquí con esos filtros.</p>
+        <p class="muted">Quita filtros, borra la búsqueda o pulsa “Actualizar ahora” para leer las fuentes de nuevo.</p>
+      </div>`;
+    return {
+      hero: hero.length ? `
+        <div class="radar-hero-head"><h3 class="mb0">Lo que no puedes dejar pasar</h3><small class="muted">Alto impacto sin leer</small></div>
+        <div class="radar-hero">${hero.map((n) => radarCard(n, true)).join('')}</div>` : '',
+      lista: resto.length || hero.length ? resto.map((n) => radarCard(n)).join('') : vacio,
+      contador: `${lista.length} nota${lista.length === 1 ? '' : 's'} · ${lista.filter((n) => !R.leidas.has(n.id)).length} sin leer`,
+    };
+  }
+
+  function pintarRadarLista() {
+    const { hero, lista, contador } = radarListaHTML();
+    const h = $('#radarHero'); const l = $('#radarLista'); const c = $('#radarContador');
+    if (h) h.innerHTML = hero;
+    if (l) l.innerHTML = lista;
+    if (c) c.textContent = contador;
+  }
+
+  function radarMetaTexto() {
+    const cuando = R.actualizadoEn
+      ? new Date(R.actualizadoEn).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : null;
+    const origen = { repo: 'actualización automática', vivo: 'lectura en vivo', semilla: 'paquete local' }[R.origen] || '';
+    return cuando ? `Última lectura: ${cuando} (${origen})` : `Fuente: ${origen}`;
+  }
+
+  function vRadar() {
+    const temasPresentes = new Map();
+    for (const n of R.items) for (const t of n.temas || []) {
+      if (R.TEMAS[t]) temasPresentes.set(t, (temasPresentes.get(t) || 0) + 1);
+    }
+    const chipsTemas = [...temasPresentes.entries()]
+      .sort((a, b) => b[1] - a[1]).slice(0, 10)
+      .map(([t]) => `<button class="chip-filter ${state.radarTema === t ? 'active' : ''}" data-radar-tema-filtro="${t}">${R.TEMAS[t].label}</button>`)
+      .join('');
+    const fuentes = [...new Set(R.items.map((n) => n.fuente))];
+    const { hero, lista, contador } = radarListaHTML();
+
+    return `
+      <div class="flex between wrap">
+        <div>
+          <h1 class="view-title">Radar fiscal <span class="badge badge-live"><span class="dot-live"></span> Datos reales</span></h1>
+          <p class="view-sub">Cambios del SAT, publicaciones del DOF y prensa fiscal — clasificados por tema y cruzados con tu cartera para decirte <strong>a quién le pegan</strong>. Deja de perseguir la noticia: aquí te encuentra a ti.</p>
+        </div>
+        <div class="radar-acciones">
+          <button class="btn btn-primary btn-sm" id="btnRadarRefresh">⟳ Actualizar ahora</button>
+          <small class="muted" id="radarMeta">${esc(radarMetaTexto())}</small>
+        </div>
+      </div>
+
+      <div class="card card-pad radar-filtros">
+        <div class="radar-chips" role="group" aria-label="Filtrar por tema">
+          <button class="chip-filter ${state.radarTema === 'todos' ? 'active' : ''}" data-radar-tema-filtro="todos">Todos los temas</button>
+          ${chipsTemas}
+        </div>
+        <div class="radar-controles">
+          <input class="input" id="radarBusqueda" type="search" placeholder="Buscar (ej. “DIOT”, “multa”, “RESICO”)…" value="${esc(state.radarBusqueda)}" aria-label="Buscar en el radar" />
+          <select class="input" id="radarFuente" aria-label="Filtrar por fuente">
+            <option value="todas">Todas las fuentes</option>
+            ${fuentes.map((f) => `<option value="${esc(f)}" ${state.radarFuente === f ? 'selected' : ''}>${esc(f)}</option>`).join('')}
+          </select>
+          <label class="radar-noleidas"><input type="checkbox" id="radarNoLeidas" ${state.radarSoloNoLeidas ? 'checked' : ''}/> Solo sin leer</label>
+          <button class="btn btn-ghost btn-sm" id="btnRadarTodoLeido">Marcar todo como leído</button>
+        </div>
+        <small class="muted" id="radarContador">${contador}</small>
+      </div>
+
+      <div id="radarHero">${hero}</div>
+      <div class="radar-lista" id="radarLista">${lista}</div>
+
+      <p class="hint" style="margin-top:14px">El radar se alimenta solo, dos veces al día, de fuentes públicas (El Contribuyente, DOF, IDC). El resumen es informativo: antes de aplicar un cambio con un cliente, confirma en la fuente original.</p>`;
+  }
+
+  function radarRefrescar() {
+    const btn = $('#btnRadarRefresh');
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Leyendo fuentes…';
+    R.actualizarEnVivo().then(({ agregadas, errores }) => {
+      if (agregadas) toast(`Radar actualizado: ${agregadas} nota${agregadas === 1 ? '' : 's'} nueva${agregadas === 1 ? '' : 's'}. 📡`);
+      else if (errores.length === 3) toast('No se pudo leer ninguna fuente ahora. El radar conserva lo último que tenía.', 'warn');
+      else toast('Radar al día: sin novedades desde la última lectura. ✅');
+      if (errores.length && errores.length < 3) toast(`Fuente sin responder: ${errores.join(', ')}. Se leyó el resto.`, 'warn');
+      if (state.view === 'radar') render();
+    }).finally(() => { btn.disabled = false; btn.textContent = original; });
+  }
+
+  /* ======================================================================
    * Render raíz + navegación
    * ==================================================================== */
   const VISTAS = {
@@ -811,7 +1229,9 @@
     clientes: vClientes,
     impuestos: vImpuestos,
     cfdi: vCfdi,
+    diot: vDiot,
     calendario: vCalendario,
+    radar: vRadar,
     cobranza: vCobranza,
     portal: vPortal,
   };
@@ -835,6 +1255,9 @@
     $('#navClientes').textContent = state.clientes.length;
     $('#navCfdiAlert').textContent = D.CFDIS.filter((x) => x.riesgo).length || '';
     $('#navCobranzaAlert').textContent = D.COBRANZA.filter((f) => f.estado === 'vencida').length || '';
+    const radarPend = R.items.filter((n) => n.impacto === 'alto' && !R.leidas.has(n.id)).length;
+    const nr = $('#navRadarAlert');
+    if (nr) nr.textContent = radarPend || '';
   }
 
   function afterRender() {
@@ -844,6 +1267,58 @@
     }
     if (state.view === 'cfdi') {
       $('#btnRobot')?.addEventListener('click', correrRobot);
+      // Zona de carga real de XML (sube/arrastra → parsea en el navegador).
+      const drop = $('#cfdiDrop');
+      const input = $('#cfdiFileInput');
+      if (drop && input) {
+        drop.addEventListener('click', () => input.click());
+        drop.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+        });
+        ['dragover', 'dragenter'].forEach((ev) =>
+          drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('drag'); }));
+        ['dragleave', 'drop'].forEach((ev) =>
+          drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('drag'); }));
+        drop.addEventListener('drop', (e) => procesarArchivosCFDI(e.dataTransfer.files));
+        input.addEventListener('change', (e) => { procesarArchivosCFDI(e.target.files); e.target.value = ''; });
+      }
+      $('#btnLimpiarCfdi')?.addEventListener('click', () => {
+        state.cfdiReales = [];
+        render();
+        toast('Lista de XML vaciada.');
+      });
+    }
+    if (state.view === 'diot') {
+      const generarResumen = () => window.DIOT.agruparPorProveedor(state.cfdiReales, state.diotRfc);
+      $('#btnDiotTxt')?.addEventListener('click', () => {
+        const r = generarResumen();
+        if (!r.proveedores.length) { toast('No hay proveedores que exportar para este contribuyente.', 'warn'); return; }
+        descargarArchivo(window.DIOT.nombreArchivo(r), window.DIOT.generarTxt(r));
+        toast(`DIOT generada: ${r.proveedores.length} proveedor(es) · ${r.periodo.label}. ✅`);
+      });
+      $('#btnDiotCopiar')?.addEventListener('click', () => {
+        const r = generarResumen();
+        navigator.clipboard?.writeText(window.DIOT.generarTxt(r)).then(
+          () => toast('Contenido del .txt copiado al portapapeles ✅'),
+          () => toast('No se pudo copiar en este navegador', 'warn')
+        );
+      });
+    }
+    if (state.view === 'radar') {
+      $('#btnRadarRefresh')?.addEventListener('click', radarRefrescar);
+      // La búsqueda repinta SOLO la lista para no perder el foco del input.
+      $('#radarBusqueda')?.addEventListener('input', (e) => {
+        state.radarBusqueda = e.target.value;
+        pintarRadarLista();
+      });
+      $('#radarFuente')?.addEventListener('change', (e) => { state.radarFuente = e.target.value; render(); });
+      $('#radarNoLeidas')?.addEventListener('change', (e) => { state.radarSoloNoLeidas = e.target.checked; render(); });
+      $('#btnRadarTodoLeido')?.addEventListener('click', () => {
+        radarFiltrados().forEach((n) => R.marcarLeida(n.id, true));
+        actualizarBadgesNav();
+        render();
+        toast('Radar despejado: todo marcado como leído. ✅');
+      });
     }
     if (state.view === 'portal') {
       const z = $('#uploadZone');
@@ -955,7 +1430,8 @@
     }
     const vistas = [
       ['◳', 'Resumen', 'resumen'], ['👥', 'Clientes', 'clientes'], ['🧮', 'Impuestos 2026', 'impuestos'],
-      ['⬇️', 'CFDI / XML', 'cfdi'], ['📅', 'Calendario fiscal', 'calendario'],
+      ['⬇️', 'CFDI / XML', 'cfdi'], ['📤', 'DIOT', 'diot'], ['📅', 'Calendario fiscal', 'calendario'],
+      ['📡', 'Radar fiscal', 'radar'],
       ['💸', 'Cobranza', 'cobranza'], ['🤝', 'Portal del cliente', 'portal'],
     ];
     for (const [ico, titulo, view] of vistas) {
@@ -964,10 +1440,12 @@
     items.push(
       { ico: '➕', titulo: 'Nuevo cliente', sub: 'Dar de alta un contribuyente', kind: 'Acción', claves: 'nuevo cliente alta agregar registrar', run: () => { state.view = 'clientes'; render(); abrirModalCliente(); } },
       { ico: '🤖', titulo: 'Simular descarga de XML', sub: 'Corre el robot del SAT ahora', kind: 'Acción', claves: 'robot descarga xml sat simular corrida', run: () => { state.view = 'cfdi'; render(); correrRobot(); } },
+      { ico: '📤', titulo: 'Generar DIOT', sub: 'Cuadre del IVA por proveedor y .txt', kind: 'Acción', claves: 'diot generar declaracion informativa operaciones terceros iva acreditable txt', run: () => { state.view = 'diot'; render(); } },
       { ico: '🧮', titulo: 'Calcular RESICO', sub: 'Persona física, tasa directa', kind: 'Acción', claves: 'calcular resico isr', run: () => { state.calcTab = 'resico'; state.view = 'impuestos'; render(); } },
       { ico: '🧮', titulo: 'Calcular IVA del mes', sub: 'Trasladado vs. acreditable', kind: 'Acción', claves: 'calcular iva mensual', run: () => { state.calcTab = 'iva'; state.view = 'impuestos'; render(); } },
       { ico: '🧮', titulo: 'Calcular ISR actividad empresarial', sub: 'Pagos provisionales acumulados', kind: 'Acción', claves: 'calcular isr actividad empresarial profesional honorarios', run: () => { state.calcTab = 'actividad'; state.view = 'impuestos'; render(); } },
       { ico: '🧮', titulo: 'Calcular ISR persona moral', sub: 'Coeficiente de utilidad, 30%', kind: 'Acción', claves: 'calcular isr persona moral coeficiente', run: () => { state.calcTab = 'pm'; state.view = 'impuestos'; render(); } },
+      { ico: '📡', titulo: 'Actualizar radar fiscal', sub: 'Leer las fuentes ahora (SAT, DOF, prensa)', kind: 'Acción', claves: 'radar noticias actualizar novedades sat dof leyes cambios', run: () => { state.view = 'radar'; render(); setTimeout(radarRefrescar, 60); } },
       { ico: '▶', titulo: 'Ver tour de bienvenida', sub: 'Recorrido de 4 pasos', kind: 'Acción', claves: 'tour ayuda bienvenida como funciona', run: iniciarTour },
     );
     return items;
@@ -1136,6 +1614,51 @@
     const filtro = e.target.closest('[data-filtro]');
     if (filtro) { state.filtroSem = filtro.dataset.filtro; render(); return; }
 
+    // ---- Radar fiscal ----------------------------------------------------
+    const chipFiltro = e.target.closest('[data-radar-tema-filtro]');
+    if (chipFiltro) { state.radarTema = chipFiltro.dataset.radarTemaFiltro; render(); return; }
+
+    const chipTema = e.target.closest('[data-radar-tema]');
+    if (chipTema) {
+      // Un chip de tema dentro de una tarjeta activa ese filtro.
+      state.radarTema = chipTema.dataset.radarTema;
+      if (state.view !== 'radar') state.view = 'radar';
+      render();
+      return;
+    }
+
+    const leidaBtn = e.target.closest('[data-radar-leida]');
+    if (leidaBtn) {
+      const id = leidaBtn.dataset.radarLeida;
+      const ahora = !R.leidas.has(id);
+      R.marcarLeida(id, ahora);
+      // Actualiza la tarjeta in situ para no perder el scroll.
+      const card = leidaBtn.closest('.radar-card');
+      if (card) {
+        card.classList.toggle('leida', ahora);
+        leidaBtn.textContent = ahora ? '↩' : '✓';
+        leidaBtn.title = ahora ? 'Marcar como no leída' : 'Marcar como leída';
+      }
+      actualizarBadgesNav();
+      const c = $('#radarContador');
+      if (c) {
+        const lista = radarFiltrados();
+        c.textContent = `${lista.length} nota${lista.length === 1 ? '' : 's'} · ${lista.filter((n) => !R.leidas.has(n.id)).length} sin leer`;
+      }
+      return;
+    }
+
+    const afBtn = e.target.closest('[data-radar-afectados]');
+    if (afBtn) {
+      const panel = $('#af-' + afBtn.dataset.radarAfectados);
+      if (panel) {
+        const abierto = !panel.hidden;
+        panel.hidden = abierto;
+        afBtn.setAttribute('aria-expanded', String(!abierto));
+      }
+      return;
+    }
+
     const tab = e.target.closest('[data-tab]');
     if (tab) {
       state.calcTab = tab.dataset.tab;
@@ -1271,6 +1794,10 @@
       render();
       if (c) toast(`Calculando para ${c.nombre.split(',')[0]} — régimen ${c.regimen}.`);
     }
+    if (e.target.id === 'diotContribuyente') {
+      state.diotRfc = e.target.value;
+      render();
+    }
   });
 
   document.addEventListener('keydown', (e) => {
@@ -1302,4 +1829,11 @@
   if (!tourVisto) state.view = 'resumen';
   render();
   if (!tourVisto) setTimeout(iniciarTour, 450);
+
+  // El radar carga su base (JSON del repo + caché) en segundo plano y
+  // refresca la vista solo si no interrumpe nada (tour cerrado).
+  R.cargarBase().then(() => {
+    actualizarBadgesNav();
+    if (pasoTour < 0 && (state.view === 'radar' || state.view === 'resumen')) render();
+  });
 })();

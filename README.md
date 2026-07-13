@@ -76,19 +76,73 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 | **Resumen** | Pendientes de hoy palomeables + semáforo de cartera, alertas críticas (69-B, buzón, 32-D), actividad de la noche |
 | **Clientes** | CRUD real con validación de RFC en vivo y persistencia en `localStorage`; expediente con días extra por 6º dígito del RFC |
 | **Impuestos 2026** | Calculadora funcional: RESICO PF, Actividad Empresarial (acumulados Art. 106), PM 30% con coeficiente, sueldos e IVA — con papel de trabajo copiable/imprimible y la tarifa aplicada resaltada |
-| **CFDI / XML** | Simulador del robot de descarga masiva con reintentos ante errores del SAT + monitor de riesgos (EFOS 69-B, duplicados, PPD sin REP, cancelados) |
+| **CFDI / XML** | **Lector real de CFDI 4.0**: sube o arrastra tus XML y se parsean en el navegador (emisor/receptor, PUE/PPD, IVA 16/8/0/exento, retenciones, UUID) + **validación de REP** (cruza las PPD contra sus complementos de pago) + simulador del robot de descarga y monitor de riesgos (EFOS 69-B, duplicados, cancelados) |
+| **DIOT** | **Cuadre real**: agrupa los gastos por proveedor, suma bases de IVA por tasa (16/8/0/exento), IVA acreditable y retenciones; aparta los PPD; y genera el **.txt de carga batch** (54 campos, layout a cotejar contra el SAT) |
 | **Calendario fiscal** | Generado por reglas: día 17 → día hábil, DIOT fin de mes, anuales, PTU, multa de buzón 2027 |
+| **Radar fiscal** 📡 | **La única vista con datos reales**: noticias del SAT, DOF y prensa fiscal clasificadas por tema e impacto, y **cruzadas con la cartera** ("esta noticia afecta a 4 de tus clientes RESICO → clic → expediente"). Marcar leído, filtros, búsqueda y botón de actualización en vivo |
 | **Cobranza** | Aging de igualas, recordatorio automático estilo WhatsApp y suspensión de portal |
 | **Portal del cliente** | Lo que ve el cliente final: checklist de documentos, su impuesto estimado, zona de carga |
+
+### Radar fiscal (`assets/js/noticias.js` + `scripts/actualizar_noticias.py`)
+
+El radar responde la pregunta que consume horas de todo contador: *"¿qué cambió
+hoy y a cuál de MIS clientes le afecta?"*. Funciona en tres capas, de la más
+fresca a la más resistente:
+
+1. **Actualización automática**: `.github/workflows/radar-fiscal.yml` corre
+   `scripts/actualizar_noticias.py` (Python estándar, cero dependencias) dos
+   veces al día. Lee los RSS de El Contribuyente, el sumario del DOF e IDC,
+   descarta lo no fiscal, clasifica por tema/impacto y regenera
+   `assets/data/noticias.json` con commit automático. **Se activa solo con
+   subir el repo a GitHub** (pestaña Actions → habilitar workflows).
+2. **Botón "Actualizar ahora"**: lee los mismos feeds desde el navegador vía
+   proxy CORS y mezcla lo nuevo sin recargar, con caché en `localStorage`.
+3. **Semilla embebida**: noticias reales de jun–jul 2026 dentro de
+   `noticias.js`, para que el radar nunca se vea vacío ni sin conexión.
+
+El cruce con la cartera usa la taxonomía de temas (69-B, CFDI, RESICO,
+nóminas, fiscalización…): cada tema mapea a regímenes fiscales, y las notas
+69-B destacan primero a los clientes que **ya** traen bandera de riesgo.
 
 ### Motor fiscal (`assets/js/fiscal.js`)
 - Tarifa ISR mensual 2026 (Anexo 8 RMF 2026, DOF 28-dic-2025; actualización
   por inflación 13.21%). Anclas verificadas contra fuentes públicas;
   **cotejar centavos contra el DOF antes de producción**.
-- Tablas RESICO PF (Art. 113-E), ISR PM 30%, IVA con retenciones.
+- Tablas RESICO PF (Art. 113-E) con validación del tope **anual** de $3.5M,
+  ISR PM 30%, IVA con retenciones.
+- **Subsidio para el empleo 2026** (DOF 31-dic-2025): cuota fija de $536.22/mes
+  cuando el ingreso gravado no excede $11,492.66, aplicado en el cálculo de
+  sueldos (si el subsidio supera al ISR, la diferencia no se entrega en efectivo).
 - Validador de estructura de RFC y cálculo de días extra por 6º dígito
   (Decreto de facilidades Art. 5.1).
 - Calendario 2026 generado por reglas con días inhábiles y recorrido a hábil.
+
+### Lector de CFDI (`assets/js/cfdi.js`)
+- Parser de **CFDI 4.0** 100 % en el navegador (`DOMParser`): acepta uno o varios
+  XML y extrae emisor/receptor, tipo (Ingreso/Egreso/Pago/Nómina), método de pago
+  (PUE/PPD), totales, desglose de IVA (16/8/0/exento) y retenciones (IVA/ISR),
+  UUID del timbre y los documentos relacionados de los complementos de Pago (REP).
+- Tolerante a prefijos de namespace y con manejo de errores para XML mal formados.
+- **Privacidad:** ningún archivo sale del equipo; los datos viven solo en memoria.
+- Archivos de prueba en [`docs/ejemplos/`](docs/ejemplos/).
+
+### Generador de DIOT (`assets/js/diot.js`)
+- A partir de los CFDI parseados, agrupa los **gastos** (facturas recibidas) por
+  proveedor y suma las bases de IVA por tasa (16/8/0/exento), el IVA acreditable
+  y las retenciones — con **visor de cuadre** antes de descargar.
+- Genera el archivo **.txt de carga batch** (formato nuevo SAT 2025: 54 campos
+  separados por «|», UTF-8, montos sin decimales). ⚠️ El **orden exacto de las
+  columnas debe cotejarse contra el instructivo oficial** del SAT; el mapeo está
+  centralizado en la constante `COL` de `diot.js` para ajustarlo en un solo lugar.
+- Los gastos **PPD** se reportan aparte: solo entran a la DIOT del mes en que se
+  pagan (cuando tengan su REP — ver el validador de REP).
+
+### Validador de REP (`assets/js/rep.js`)
+- Cruza las facturas **PPD** contra los **complementos de pago (REP)** que subas:
+  marca las **PPD sin REP** (riesgo de multa y de no poder deducir/acreditar) y,
+  para las que sí lo tienen, calcula la **cobertura de pago** (pagado, saldo y
+  parcialidades). Detecta también REP "huérfanos" (referencian una factura que
+  no está entre los XML cargados).
 
 ## Estructura
 
@@ -96,9 +150,13 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 ├── index.html              # Landing
 ├── app.html                # Demo del panel
 ├── assets/
-│   ├── css/ base.css · landing.css · app.css
-│   └── js/  fiscal.js · data.js · app.js · landing.js
+│   ├── css/  base.css · landing.css · app.css
+│   ├── js/   fiscal.js · data.js · cfdi.js · diot.js · rep.js · noticias.js · app.js · landing.js
+│   └── data/ noticias.json         # regenerado por el Action, 2×/día
+├── scripts/actualizar_noticias.py  # lector RSS del radar (Python estándar)
+├── .github/workflows/radar-fiscal.yml
 ├── docs/INVESTIGACION.md   # Investigación de mercado con fuentes
+├── docs/ejemplos/          # XML de prueba (CFDI 4.0) para el lector
 └── README.md
 ```
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EJEMPLO FICTICIO. Complemento de Pago (REP) tipo "P" que salda la factura
+     PPD del archivo 02 (IdDocumento = su UUID). Al subir ambos, el validador
+     de REP debe emparejarlos. -->
+<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:pago20="http://www.sat.gob.mx/Pagos20" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd" Version="4.0" Serie="P" Folio="77" Fecha="2026-06-15T12:00:00" Sello="SELLO_DEMO==" NoCertificado="30001000000500003416" Certificado="CERT_DEMO==" SubTotal="0" Moneda="XXX" Total="0" TipoDeComprobante="P" Exportacion="01" LugarExpedicion="64000">
+  <cfdi:Emisor Rfc="TAC150612QW3" Nombre="TALLER AUTOMOTRIZ CARRILLO" RegimenFiscal="601"/>
+  <cfdi:Receptor Rfc="RNO180510AB2" Nombre="REFACCIONARIA DEL NORTE" DomicilioFiscalReceptor="64500" RegimenFiscalReceptor="601" UsoCFDI="CP01"/>
+  <cfdi:Conceptos>
+    <cfdi:Concepto ClaveProdServ="84111506" Cantidad="1" ClaveUnidad="ACT" Descripcion="Pago" ValorUnitario="0" Importe="0" ObjetoImp="01"/>
+  </cfdi:Conceptos>
+  <cfdi:Complemento>
+    <pago20:Pagos Version="2.0">
+      <pago20:Totales MontoTotalPagos="58000.00"/>
+      <pago20:Pago FechaPago="2026-06-15T12:00:00" FormaDePagoP="03" MonedaP="MXN" TipoCambioP="1" Monto="58000.00">
+        <pago20:DoctoRelacionado IdDocumento="B2C3D4E5-2222-4B6C-9D0E-000000002048" Serie="B" Folio="2048" MonedaDR="MXN" EquivalenciaDR="1" NumParcialidad="1" ImpSaldoAnt="58000.00" ImpPagado="58000.00" ImpSaldoInsoluto="0.00" ObjetoImpDR="02"/>
+      </pago20:Pago>
+    </pago20:Pagos>
+    <tfd:TimbreFiscalDigital xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital" Version="1.1" UUID="D4E5F6A7-4444-4D8E-BF20-000000000077" FechaTimbrado="2026-06-15T12:00:30" RfcProvCertif="SAT970701NN3" SelloCFD="SELLO_DEMO==" NoCertificadoSAT="30001000000500003456" SelloSAT="SELLO_SAT_DEMO=="/>
+  </cfdi:Complemento>
+</cfdi:Comprobante>
