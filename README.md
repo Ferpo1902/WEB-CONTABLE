@@ -79,8 +79,30 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 | **CFDI / XML** | **Lector real de CFDI 4.0**: sube o arrastra tus XML y se parsean en el navegador (emisor/receptor, PUE/PPD, IVA 16/8/0/exento, retenciones, UUID) + **validación de REP** (cruza las PPD contra sus complementos de pago) + simulador del robot de descarga y monitor de riesgos (EFOS 69-B, duplicados, cancelados) |
 | **DIOT** | **Cuadre real**: agrupa los gastos por proveedor, suma bases de IVA por tasa (16/8/0/exento), IVA acreditable y retenciones; aparta los PPD; y genera el **.txt de carga batch** (54 campos, layout a cotejar contra el SAT) |
 | **Calendario fiscal** | Generado por reglas: día 17 → día hábil, DIOT fin de mes, anuales, PTU, multa de buzón 2027 |
+| **Radar fiscal** 📡 | **La única vista con datos reales**: noticias del SAT, DOF y prensa fiscal clasificadas por tema e impacto, y **cruzadas con la cartera** ("esta noticia afecta a 4 de tus clientes RESICO → clic → expediente"). Marcar leído, filtros, búsqueda y botón de actualización en vivo |
 | **Cobranza** | Aging de igualas, recordatorio automático estilo WhatsApp y suspensión de portal |
 | **Portal del cliente** | Lo que ve el cliente final: checklist de documentos, su impuesto estimado, zona de carga |
+
+### Radar fiscal (`assets/js/noticias.js` + `scripts/actualizar_noticias.py`)
+
+El radar responde la pregunta que consume horas de todo contador: *"¿qué cambió
+hoy y a cuál de MIS clientes le afecta?"*. Funciona en tres capas, de la más
+fresca a la más resistente:
+
+1. **Actualización automática**: `.github/workflows/radar-fiscal.yml` corre
+   `scripts/actualizar_noticias.py` (Python estándar, cero dependencias) dos
+   veces al día. Lee los RSS de El Contribuyente, el sumario del DOF e IDC,
+   descarta lo no fiscal, clasifica por tema/impacto y regenera
+   `assets/data/noticias.json` con commit automático. **Se activa solo con
+   subir el repo a GitHub** (pestaña Actions → habilitar workflows).
+2. **Botón "Actualizar ahora"**: lee los mismos feeds desde el navegador vía
+   proxy CORS y mezcla lo nuevo sin recargar, con caché en `localStorage`.
+3. **Semilla embebida**: noticias reales de jun–jul 2026 dentro de
+   `noticias.js`, para que el radar nunca se vea vacío ni sin conexión.
+
+El cruce con la cartera usa la taxonomía de temas (69-B, CFDI, RESICO,
+nóminas, fiscalización…): cada tema mapea a regímenes fiscales, y las notas
+69-B destacan primero a los clientes que **ya** traen bandera de riesgo.
 
 ### Motor fiscal (`assets/js/fiscal.js`)
 - Tarifa ISR mensual 2026 (Anexo 8 RMF 2026, DOF 28-dic-2025; actualización
@@ -128,8 +150,11 @@ También funciona tal cual en GitHub Pages / Netlify / Vercel (sitio estático).
 ├── index.html              # Landing
 ├── app.html                # Demo del panel
 ├── assets/
-│   ├── css/ base.css · landing.css · app.css
-│   └── js/  fiscal.js · data.js · cfdi.js · diot.js · rep.js · app.js · landing.js
+│   ├── css/  base.css · landing.css · app.css
+│   ├── js/   fiscal.js · data.js · cfdi.js · diot.js · rep.js · noticias.js · app.js · landing.js
+│   └── data/ noticias.json         # regenerado por el Action, 2×/día
+├── scripts/actualizar_noticias.py  # lector RSS del radar (Python estándar)
+├── .github/workflows/radar-fiscal.yml
 ├── docs/INVESTIGACION.md   # Investigación de mercado con fuentes
 ├── docs/ejemplos/          # XML de prueba (CFDI 4.0) para el lector
 └── README.md

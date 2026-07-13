@@ -1,0 +1,184 @@
+{
+  "generado": "2026-07-12T23:57:46+00:00",
+  "fuentes": [],
+  "items": [
+    {
+      "id": "sem-descarga-retrasos",
+      "fecha": "2026-07-10",
+      "fuente": "El Contribuyente",
+      "titulo": "Retrasos en la descarga masiva del SAT: hasta seis días por paquete solicitado",
+      "resumen": "El Web Service de descarga masiva acumula demoras de varios días por paquete. Si dependes de los XML para conciliar el mes, programa las solicitudes con anticipación y no dejes el cierre para el día 15.",
+      "url": "https://www.elcontribuyente.mx/2026/07/descarga-masiva-que-no-colapsa/",
+      "temas": [
+        "cfdi",
+        "satServicios"
+      ],
+      "impacto": "alto"
+    },
+    {
+      "id": "sem-herencias-debate",
+      "fecha": "2026-07-10",
+      "fuente": "El Contribuyente",
+      "titulo": "¿Hay impuesto a las herencias en México? Esto dice la ley y por qué volvió el debate",
+      "resumen": "La exención de ISR aplica al recibir la herencia, no al aprovecharla. Así funciona hoy el régimen fiscal de las sucesiones y qué propuesta reabrió la discusión pública.",
+      "url": "https://www.elcontribuyente.mx/2026/07/hay-impuesto-a-las-herencias-en-mexico-esto-dice-la-ley-y-por-que-volvio-el-debate/",
+      "temas": [
+        "isr"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-herencias-sheinbaum",
+      "fecha": "2026-07-10",
+      "fuente": "El Contribuyente",
+      "titulo": "Sheinbaum cierra el debate: el gobierno no gravará herencias ni Afores",
+      "resumen": "Tras la propuesta de gravar herencias para reducir desigualdad, la presidenta descartó la medida y señaló que, de requerir mayor recaudación, se buscarían otras alternativas.",
+      "url": "https://www.elcontribuyente.mx/2026/07/sheinbaum-cierra-el-debate-el-gobierno-no-gravara-herencias-ni-afores/",
+      "temas": [
+        "iva"
+      ],
+      "impacto": "info"
+    },
+    {
+      "id": "sem-imss-coyotes",
+      "fecha": "2026-07-10",
+      "fuente": "El Contribuyente",
+      "titulo": "IMSS advierte: los \"coyotes\" que ofrecen semanas cotizadas pueden costarte la pensión",
+      "resumen": "Trabajadores recurren a intermediarios para reactivar semanas de cotización. El Instituto alerta que esas gestiones irregulares pueden anular derechos. Vale avisar a clientes con trabajadores cerca del retiro.",
+      "url": "https://www.elcontribuyente.mx/2026/07/imss-advierte-los-coyotes-que-ofrecen-semanas-pueden-quitarte-tu-pension/",
+      "temas": [
+        "nominas"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-afores-isr-jueces",
+      "fecha": "2026-07-09",
+      "fuente": "El Contribuyente",
+      "titulo": "Jueces rechazan que las Afores hereden la retención de ISR: los tribunales no recaudan",
+      "resumen": "Resoluciones judiciales acotan el papel de las administradoras en retenciones de ISR sobre recursos heredados, delimitando responsabilidades entre Afore, beneficiario y autoridad fiscal.",
+      "url": "https://www.elcontribuyente.mx/2026/07/jueces-rechazan-que-afores-hereden-isr-los-tribunales-no-recaudan/",
+      "temas": [
+        "isr"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-efos-64",
+      "fecha": "2026-07-08",
+      "fuente": "El Contribuyente",
+      "titulo": "El SAT publica en el DOF listado presunto de 64 contribuyentes por facturas sin capacidad real (69-B)",
+      "resumen": "Los señalados como presuntos EFOS tienen 15 días hábiles para desvirtuar los hechos. Revisa si algún proveedor de tus clientes aparece en la lista antes de que las deducciones queden en riesgo.",
+      "url": "https://www.elcontribuyente.mx/sat/",
+      "temas": [
+        "69b",
+        "cfdi",
+        "fiscalizacion"
+      ],
+      "impacto": "alto"
+    },
+    {
+      "id": "sem-iva-deducciones",
+      "fecha": "2026-07-06",
+      "fuente": "El Contribuyente",
+      "titulo": "Acreditar el IVA de deducciones personales: tiene base legal, pero el SAT lo rechaza en revisiones",
+      "resumen": "La postura de acreditar IVA vinculado a deducciones personales encuentra sustento normativo, pero en la práctica la autoridad lo objeta. Evalúa costo-beneficio y el apetito de riesgo del cliente antes de aplicarlo.",
+      "url": "https://www.elcontribuyente.mx/lo-ultimo/",
+      "temas": [
+        "iva",
+        "anualpf"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-fiscalizacion-inteligente",
+      "fecha": "2026-06-24",
+      "fuente": "El Contribuyente",
+      "titulo": "El SAT ya no espera errores evidentes: así funciona la fiscalización inteligente",
+      "resumen": "Con cruces de información, inteligencia fiscal y nuevas facultades, el SAT detecta riesgos en tiempo récord mediante revisiones exprés. Lo que empresas y contadores deben saber para no ser tomados por sorpresa.",
+      "url": "https://www.elcontribuyente.mx/2026/06/el-sat-ya-no-espera-errores-evidentes-asi-funciona-la-fiscalizacion-inteligente/",
+      "temas": [
+        "fiscalizacion"
+      ],
+      "impacto": "alto"
+    },
+    {
+      "id": "sem-cartas-invitacion",
+      "fecha": "2026-06-15",
+      "fuente": "El Contribuyente",
+      "titulo": "Cartas invitación de vigilancia profunda del SAT: no las ignores, pero tampoco entregues información de más",
+      "resumen": "Recibir una notificación del SAT genera preocupación entendible. La recomendación: atender en plazo, acotar la respuesta a lo solicitado y documentar todo. Ignorarla escala el asunto; sobreexponerse abre frentes nuevos.",
+      "url": "https://www.elcontribuyente.mx/2026/06/cartas-invitacion-de-vigilancia-profunda-del-sat-no-las-ignores-pero-tampoco-entregues-informacion-de-mas/",
+      "temas": [
+        "fiscalizacion",
+        "buzon"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-csf-multa",
+      "fecha": "2026-06-10",
+      "fuente": "El Contribuyente",
+      "titulo": "Proponen multar a quien condicione la emisión de un CFDI a exigir la constancia de situación fiscal",
+      "resumen": "La iniciativa en el Congreso modificaría el CFF: el emisor puede validar datos del receptor sin exigir la CSF completa. De aprobarse, cambia el guion de facturación que muchos negocios siguen usando.",
+      "url": "https://www.elcontribuyente.mx/sat/",
+      "temas": [
+        "cfdi",
+        "cff"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-resico-44m",
+      "fecha": "2026-06-02",
+      "fuente": "El Contribuyente",
+      "titulo": "El RESICO alcanza 4.4 millones de contribuyentes al cierre de abril de 2026",
+      "resumen": "El régimen simplificado ya supera al Repeco y al RIF en padrón. La informalidad, sin embargo, apenas bajó 4.7 puntos en 16 años. Para despachos: el flujo de altas RESICO sigue siendo la puerta de entrada de clientes nuevos.",
+      "url": "https://www.elcontribuyente.mx/",
+      "temas": [
+        "resico"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-cripto-exchanges",
+      "fecha": "2026-05-20",
+      "fuente": "El Contribuyente",
+      "titulo": "El SAT ya recibe datos de exchanges en 2026: cómo tributa operar Bitcoin spot frente a CFDs",
+      "resumen": "Con el intercambio de información de plataformas cripto, las diferencias fiscales entre comprar el activo y operar derivados dejan de ser teóricas. Si algún cliente opera cripto, este es el año para ordenar su expediente.",
+      "url": "https://www.elcontribuyente.mx/lo-ultimo/",
+      "temas": [
+        "cripto",
+        "isr"
+      ],
+      "impacto": "medio"
+    },
+    {
+      "id": "sem-tarifas-isr-2026",
+      "fecha": "2026-01-05",
+      "fuente": "El Contribuyente",
+      "titulo": "Tarifas de ISR para personas físicas se actualizan en 2026 tras acumularse más de 10% de inflación",
+      "resumen": "Desde enero de 2026 aplican tarifas actualizadas de ISR para personas físicas. Verifica que tus papeles de trabajo y sistemas usen el Anexo 8 vigente: usar la tabla anterior genera diferencias en cada pago provisional.",
+      "url": "https://www.elcontribuyente.mx/tablas-isr/",
+      "temas": [
+        "isr",
+        "cff"
+      ],
+      "impacto": "alto"
+    },
+    {
+      "id": "sem-paquete-2026-cff",
+      "fecha": "2025-11-12",
+      "fuente": "El Contribuyente",
+      "titulo": "Paquete Económico 2026 endurece el CFF: el SAT puede negar o cancelar RFC ligados a EFOS/EDOS y suspender facturación",
+      "resumen": "Las reformas al Código Fiscal vigentes en 2026 amplían facultades: negativa o cancelación de RFC a empresas vinculadas con factureras, suspensión de emisión de CFDI y visitas domiciliarias con plazos acotados.",
+      "url": "https://www.elcontribuyente.mx/sat/",
+      "temas": [
+        "cff",
+        "69b",
+        "fiscalizacion"
+      ],
+      "impacto": "alto"
+    }
+  ]
+}

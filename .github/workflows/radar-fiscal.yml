@@ -1,0 +1,32 @@
+name: Radar fiscal — actualizar noticias
+
+on:
+  schedule:
+    # 12:00 y 21:00 UTC ≈ 6:00 y 15:00 en CDMX (verano).
+    - cron: "0 12 * * *"
+    - cron: "0 21 * * *"
+  workflow_dispatch: {} # botón "Run workflow" para actualizar a mano
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ejecutar actualizador (Python estándar, sin dependencias)
+        run: python3 scripts/actualizar_noticias.py
+
+      - name: Commit si hubo cambios
+        run: |
+          if git diff --quiet assets/data/noticias.json; then
+            echo "Sin cambios en noticias.json — no se hace commit."
+          else
+            git config user.name "radar-fiscal-bot"
+            git config user.email "actions@github.com"
+            git add assets/data/noticias.json
+            git commit -m "radar: noticias fiscales $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+            git push
+          fi
